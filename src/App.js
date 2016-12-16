@@ -1,19 +1,20 @@
-import React, { Component } from 'react';
-import {Menu} from 'semantic-ui-react';
+import React, {Component } from 'react';
+import {Match} from 'react-router';
+import {Sidebar, Customers, Discounts, Orders, Reports} from './Components';
 import 'semantic-ui-css/semantic.css';
-
-const menuItems = [
-  {active: true, name: "Reports"},
-  {name: "Orders"},
-  {name: "Customers"},
-  {name: "Discounts"}
-];
+import './App.css';
 
 class App extends Component {
   render() {
-    return (
-      <Menu vertical fixed="left" inverted items={menuItems}/>
-    );
+    return (<div className="App">
+      <Match pattern="*" component={Sidebar} />
+      <div className="Main">
+        <Match exactly pattern="/" component={Reports}/>
+        <Match pattern="/orders" component={Orders}/>
+        <Match pattern="/customers" component={Customers}/>
+        <Match pattern="/discounts" component={Discounts}/>
+      </div>
+    </div>);
   }
 }
 
