@@ -3,3 +3,7 @@
   margin-left: 15rem;
   padding: 1rem;
 }
+
+.tr-clickable {
+  cursor: pointer;
+}

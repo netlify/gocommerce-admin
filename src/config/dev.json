@@ -1,0 +1,6 @@
+{
+  "siteURL": "http://localhost:3000",
+  "netlifyAuth": "http://localhost:9999",
+  "netlifySubs": "http://localhost:9000",
+  "netlifyCommerce": "http://localhost:9111"
+}
