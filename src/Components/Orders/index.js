@@ -1,4 +1,4 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
 import {Breadcrumb, Checkbox, Grid, Dimmer, Divider, Dropdown, Loader, Menu, Table} from 'semantic-ui-react';
 import ErrorMessage from '../Messages/Error';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
@@ -76,11 +76,26 @@ const enabledFields = {
   "Updated At":false
 };
 
-export default class Orders extends Component {
-  static contextTypes = {
-    router: PropTypes.object
+class Order extends Component {
+  handleClick = (e) => {
+    this.props.onLink({
+      preventDefault: e.preventDefault,
+      target: {getAttribute: (a) => ({href: `/orders/${this.props.order.id}`}[a])}
+    });
   };
 
+  render() {
+    const {order, enabledFields} = this.props;
+
+    return <Table.Row className="tr-clickable" onClick={this.handleClick}>
+      {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.Cell key={field}>
+        {fields[field].fn ? fields[field].fn(order) : formatField(field, order)}
+      </Table.Cell>)}
+    </Table.Row>;
+  }
+}
+
+export default class Orders extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -108,13 +123,6 @@ export default class Orders extends Component {
     console.log("Updated fields: %o", updated);
     this.setState({enabledFields: updated});
   };
-
-  handleOrderClick(order) {
-    return (e) => {
-      e.preventDefault();
-      this.context.router.transitionTo(`/orders/${order.id}`);
-    };
-  }
 
   render() {
     const {onLink} = this.props;
@@ -158,11 +166,9 @@ export default class Orders extends Component {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {orders && orders.map((order) => <Table.Row key={order.id} className="tr-clickable" onClick={this.handleOrderClick(order)}>
-              {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.Cell key={field}>
-                {fields[field].fn ? fields[field].fn(order) : formatField(field, order)}
-              </Table.Cell>)}
-            </Table.Row>)}
+            {orders && orders.map((order) => (
+              <Order key={order.id} order={order} enabledFields={enabledFields} onLink={onLink}/>
+            ))}
           </Table.Body>
         </Table>
       </Dimmer.Dimmable>

@@ -1,5 +1,4 @@
 import React, {PropTypes, Component} from 'react';
-import {Link} from 'react-router';
 import format from 'date-fns/format';
 import {Breadcrumb, Divider, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
 import ErrorMessage from '../Messages/Error';
@@ -119,6 +118,7 @@ export default class Order extends Component {
                         title="Billing Details"
                         address={order && order.billing_address}
                         href={`/orders/${params.id}/billing_address`}
+                        onLink={onLink}
                     />
                   </Grid.Column>
 
@@ -127,6 +127,7 @@ export default class Order extends Component {
                         title="Shipping Details"
                         address={order && order.shipping_address}
                         href={`/orders/${params.id}/shipping_address`}
+                        onLink={onLink}
                     />
                   </Grid.Column>
 
@@ -192,7 +193,8 @@ export default class Order extends Component {
               </Header>
 
               {!customer && <p>Anonymous Buyer</p>}
-              {customer && <p>{customer.order_count} total orders <Link to={`/customers/${customer.id}/orders`}>view</Link></p>}
+              {customer && <p>{customer.order_count} total orders {" "}
+              <a href={`/customers/${customer.id}/orders`} onClick={onLink}>view</a></p>}
 
             </Segment>
 

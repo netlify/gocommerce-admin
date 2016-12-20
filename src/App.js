@@ -1,8 +1,7 @@
 import React, {PropTypes, Component} from 'react';
-import {Match} from 'react-router';
+import Navigo from 'navigo';
 import Auth from 'netlify-auth-js';
 import Commerce from 'netlify-commerce-js';
-import jwtDecode from 'jwt-decode';
 import {WithAuthentication, Sidebar, Customers, Discounts, Order, Orders, Reports} from './Components';
 import 'semantic-ui-css/semantic.css';
 import './App.css';
@@ -11,6 +10,21 @@ const env = process.env.REACT_APP_ENV || 'dev';
 const config = require(`./config/${env}.json`);
 const auth = new Auth({APIUrl: config.netlifyAuth});
 const commerce = new Commerce({APIUrl: config.netlifyCommerce});
+
+function NotFound(props) {
+  return <h1>Not Found!</h1>;
+}
+
+const MainComponent = {
+  reports: Reports,
+  orders: Orders,
+  order: Order,
+  customers: Customers,
+  discounts: Discounts,
+  not_found: NotFound
+};
+
+const router = new Navigo();
 
 class App extends Component {
   static contextTypes = {
@@ -22,6 +36,18 @@ class App extends Component {
     const user =  auth.currentUser();
     commerce.setUser(user);
     this.state = {user};
+  }
+
+  componentDidMount() {
+    router.on({
+      "/": () => this.setState({route: "reports", active: "Reports"}),
+      "/orders": () => this.setState({route: "orders", active: "Orders"}),
+      "/orders/:id": (params) => this.setState({route: "order", active: "Orders", params}),
+      "/customers": () => this.setState({route: "customers", active: "Customers"}),
+      "/discounts": () => this.setState({route: "discounts", active: "Discounts"})
+    }).notFound(() => {
+      this.setState({route: "not_found"})
+    }).resolve();
   }
 
   handleLogin = (email, password) => {
@@ -40,26 +66,24 @@ class App extends Component {
     this.setState({user: null});
   };
 
-
   handleLink = (e) => {
     e.preventDefault();
-    this.context.router.transitionTo(e.target.getAttribute('href'));
+    router.navigate(e.target.getAttribute('href'));
   };
 
-
   render() {
-    const {user} = this.state;
-    console.log('Token: ', user && user.jwt_token && jwtDecode(user.jwt_token));
+    const {user, route, active, params} = this.state;
+
+    const component = MainComponent[route] || null;
+    console.log("Component for route: %o", route, component);
 
     return (<div className="App">
       <WithAuthentication user={user} onLogin={this.handleLogin}>
-        <Match pattern="*" component={(props) => <Sidebar config={config} user={user} onLogout={this.handleLogout} {...props}/>} />
+        <Sidebar active={active} config={config} user={user} route={route} onLink={this.handleLink} onLogout={this.handleLogout}/>
         <div className="Main">
-          <Match exactly pattern="/" component={Reports}/>
-          <Match exactly pattern="/orders" component={(props) => <Orders config={config} commerce={commerce} onLink={this.handleLink} {...props}/>}/>
-          <Match exactly pattern="/orders/:id" component={(props) => <Order config={config} commerce={commerce} onLink={this.handleLink} {...props}/>}/>
-          <Match exactly pattern="/customers" component={(props) => <Customers config={config} commerce={commerce} onLink={this.handleLink} {...props}/>}/>
-          <Match exactly pattern="/discounts" component={Discounts}/>
+          {component && React.createElement(component, {
+            config, route, commerce, user, params, onLink: this.handleLink
+          })}
         </div>
       </WithAuthentication>
     </div>);

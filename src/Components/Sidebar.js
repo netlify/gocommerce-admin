@@ -1,4 +1,4 @@
-import React, {PropTypes, Component} from 'react';
+import React, {Component} from 'react';
 import {Menu, Dropdown, Icon} from 'semantic-ui-react';
 
 const menuItems = [
@@ -9,45 +9,17 @@ const menuItems = [
 ];
 
 export default class SideBar extends Component {
-  static propTypes = {
-    user: PropTypes.object,
-    pathname: PropTypes.string,
-  }
-
-  static contextTypes = {
-    router: PropTypes.object
-  }
-
-  handleLogout = (e) => {
-    this.props.onLogout();
-  };
-
-  handleClick = (e) => {
-    e.preventDefault();
-    const href = e.target.getAttribute("href");
-    this.context.router.transitionTo(href);
-  };
-
-  isActive = (href) => {
-    const {pathname} = this.props;
-    if (href === '/') {
-      return pathname === '/';
-    }
-    return pathname.substr(0, href.length) === href;
-  };
-
   render() {
-    const {user} = this.props;
-    const {handleLogout, handleClick, isActive} = this;
+    const {active, user, onLink, onLogout} = this.props;
 
-    return <Menu vertical fixed="left" inverted onItemClick={this.handleNavItem}>
+    return <Menu vertical fixed="left" inverted>
       <Menu.Item as={Dropdown} trigger={<span><Icon name="user"/>{user.email}</span>}>
         <Dropdown.Menu>
-          <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+          <Dropdown.Item onClick={onLogout}>Logout</Dropdown.Item>
         </Dropdown.Menu>
       </Menu.Item>
       {menuItems.map((item, i) => (
-        <Menu.Item key={i} active={isActive(item.href)} href={item.href} onClick={handleClick}>
+        <Menu.Item key={i} active={item.name === active} href={item.href} onClick={onLink}>
           {item.name}
         </Menu.Item>
       ))}

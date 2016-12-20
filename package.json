@@ -9,12 +9,12 @@
     "date-fns": "^1.21.0",
     "history": "^4.5.0",
     "jwt-decode": "^2.1.0",
+    "navigo": "^4.0.0",
     "netlify-auth-js": "^0.5.2",
     "netlify-commerce-js": "^2.1.0",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-gravatar": "^2.6.1",
-    "react-router": "^4.0.0-alpha.6",
     "semantic-ui-css": "^2.2.4",
     "semantic-ui-react": "^0.62.1"
   },

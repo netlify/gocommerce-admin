@@ -1,12 +1,10 @@
 import React from "react";
-import {Button} from "semantic-ui-react";
-import {Link} from "react-router";
 
-export default function({title, address, href}) {
+export default function({title, address, href, onLink}) {
   return <div>
     <h3>
       {title}
-      <Link className="ui basic compact right floated button" to={href}>Edit</Link>
+      <a className="ui basic compact right floated button" href={href} onClick={onLink}>Edit</a>
     </h3>
 
     {address && <div>
