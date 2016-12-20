@@ -1,23 +1,13 @@
 import React, {PropTypes, Component} from 'react';
 import {Link} from 'react-router';
 import format from 'date-fns/format';
-import {Breadcrumb, Button, Divider, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
+import {Breadcrumb, Divider, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
 import ErrorMessage from '../Messages/Error';
+import Address from './Address';
 import './styles.css';
 
 function formatId(id) {
   return id.split("-").pop();
-}
-
-function formatAddress(field, order) {
-  const addr = order[field];
-  return addr && <div>
-    {addr.first_name} {addr.last_name}<br/>
-    {addr.company && <span>{addr.company}<br/></span>}
-    {addr.address1}<br/>
-    {addr.address2 && <span>{addr.address2}<br/></span>}
-    {addr.city}, {addr.zip}, {addr.state && `${addr.state}, `} {addr.country}
-  </div>;
 }
 
 function formatPrice(value, currency) {
@@ -61,17 +51,15 @@ export default class Order extends Component {
   }
 
   componentDidMount() {
-    console.log("Props: %v", this.props);
     const {params} = this.props;
     this.props.commerce.orderDetails(params.id)
       .then((order) => {
-        console.log("Loaded order: %o", order);
         this.setState({loading: false, order});
         order.user_id && this.props.commerce.userDetails(order.user_id)
           .then((customer) => this.setState({customer}));
       })
       .catch((error) => {
-        console.log("Error loading order: %o", error);
+        console.error("Error loading order: %o", error);
         this.setState({loading: false, error});
       });
   }
@@ -127,20 +115,19 @@ export default class Order extends Component {
                   </Grid.Column>
 
                   <Grid.Column>
-                    <h3>
-                      Billing Details
-                      <Button basic compact floated="right">Edit</Button>
-                    </h3>
-                    {order && formatAddress("billing_address", order)}
+                    <Address
+                        title="Billing Details"
+                        address={order && order.billing_address}
+                        href={`/orders/${params.id}/billing_address`}
+                    />
                   </Grid.Column>
 
                   <Grid.Column>
-                    <h3>
-                      Shipping Details
-                      <Button basic compact floated="right">Edit</Button>
-                    </h3>
-
-                    {order && formatAddress("shipping_address", order)}
+                    <Address
+                        title="Shipping Details"
+                        address={order && order.shipping_address}
+                        href={`/orders/${params.id}/shipping_address`}
+                    />
                   </Grid.Column>
 
                 </Grid.Row>
