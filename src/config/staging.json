@@ -1,3 +1,5 @@
 {
-  "netlifyAuth": "https://smashing-auth.herokuapp.com"
+  "siteURL": "https://smashing-magazine.netlify.com",
+  "netlifyAuth": "https://smashing-auth.herokuapp.com",
+  "netlifyCommerce": "https://smashing-commerce.herokuapp.com"
 }
