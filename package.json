@@ -11,7 +11,7 @@
     "jwt-decode": "^2.1.0",
     "navigo": "^4.0.0",
     "netlify-auth-js": "^0.5.2",
-    "netlify-commerce-js": "^2.1.0",
+    "netlify-commerce-js": "^2.2.0",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-gravatar": "^2.6.1",
