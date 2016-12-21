@@ -43,6 +43,7 @@ class App extends Component {
       "/": () => this.setState({route: "reports", active: "Reports"}),
       "/orders": () => this.setState({route: "orders", active: "Orders"}),
       "/orders/:id": (params) => this.setState({route: "order", active: "Orders", params}),
+      "/orders/:id/:item": (params) => this.setState({route: "order", active: "Orders", params}),
       "/customers": () => this.setState({route: "customers", active: "Customers"}),
       "/discounts": () => this.setState({route: "discounts", active: "Discounts"})
     }).notFound(() => {
@@ -71,6 +72,10 @@ class App extends Component {
     router.navigate(e.target.getAttribute('href'));
   };
 
+  handlePush = (route) => {
+    router.navigate(route);
+  };
+
   render() {
     const {user, route, active, params} = this.state;
 
@@ -82,7 +87,7 @@ class App extends Component {
         <Sidebar active={active} config={config} user={user} route={route} onLink={this.handleLink} onLogout={this.handleLogout}/>
         <div className="Main">
           {component && React.createElement(component, {
-            config, route, commerce, user, params, onLink: this.handleLink
+            config, route, commerce, user, params, push: this.handlePush, onLink: this.handleLink
           })}
         </div>
       </WithAuthentication>

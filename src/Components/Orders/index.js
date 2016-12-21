@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Breadcrumb, Checkbox, Grid, Dimmer, Divider, Dropdown, Loader, Menu, Table} from 'semantic-ui-react';
+import Layout from '../Layout';
 import ErrorMessage from '../Messages/Error';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import './Orders.css';
@@ -128,30 +129,17 @@ export default class Orders extends Component {
     const {onLink} = this.props;
     const {loading, error, orders, enabledFields} = this.state;
 
-    return <div>
-      <Grid>
-        <Grid.Row columns={2}>
-          <Grid.Column>
-            <Breadcrumb>
-              <Breadcrumb.Section active href="/orders" onClick={onLink}>Orders</Breadcrumb.Section>
-            </Breadcrumb>
-          </Grid.Column>
-          <Grid.Column textAlign="right">
-            <Menu compact>
-              <Dropdown simple text="Fields" className="item">
-                <Dropdown.Menu className="orders-left-menu">
-                  {Object.keys(enabledFields).map((field) => <Dropdown.Item key={field}>
-                    <Checkbox name={field} label={field} checked={enabledFields[field]} onChange={this.handleToggleField}/>
-                  </Dropdown.Item>)}
-                </Dropdown.Menu>
-              </Dropdown>
-            </Menu>
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
-
-      <Divider/>
-
+    return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink} menu={
+      <Menu compact>
+        <Dropdown simple text="Fields" className="item">
+          <Dropdown.Menu className="orders-left-menu">
+            {Object.keys(enabledFields).map((field) => <Dropdown.Item key={field}>
+              <Checkbox name={field} label={field} checked={enabledFields[field]} onChange={this.handleToggleField}/>
+            </Dropdown.Item>)}
+          </Dropdown.Menu>
+        </Dropdown>
+      </Menu>
+    }>
       <Dimmer.Dimmable dimmed={loading}>
         <ErrorMessage error={error}/>
         <Dimmer active={loading}>
@@ -172,6 +160,6 @@ export default class Orders extends Component {
           </Table.Body>
         </Table>
       </Dimmer.Dimmable>
-    </div>;
+    </Layout>;
   }
 }

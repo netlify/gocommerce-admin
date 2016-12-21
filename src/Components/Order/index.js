@@ -1,8 +1,10 @@
 import React, {PropTypes, Component} from 'react';
 import format from 'date-fns/format';
-import {Breadcrumb, Divider, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
+import {Breadcrumb, Button, Divider, Form, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
+import Layout from '../Layout';
 import ErrorMessage from '../Messages/Error';
 import Address from './Address';
+import AddressEditor from './AddressEditor';
 import './styles.css';
 
 function formatId(id) {
@@ -39,6 +41,11 @@ function formatTransactionType(type) {
   }[type];
 }
 
+const EditableItems = {
+  "shipping_address": AddressEditor,
+  "billing_address": AddressEditor
+};
+
 export default class Order extends Component {
   static propTypes = {
     params: PropTypes.object
@@ -62,27 +69,43 @@ export default class Order extends Component {
         this.setState({loading: false, error});
       });
   }
+
+  handleSave = (item, data) => {
+    const {commerce, push} = this.props;
+    const {order} = this.state;
+
+    this.setState({loading: true});
+    commerce.updateOrder(order.id, {[item]: data})
+      .then((order) => {
+        push(`/orders/${order.id}`);
+        this.setState({loading: false, error: null, order});
+      })
+      .catch((error) => {
+        console.error("Error updating order: %o");
+        this.setState({loading: false, error});
+      })
+  };
+
+  handleShippingUpdate = (e) => {
+    e.preventDefault();
+    const {newFullfilementState} = this.state;
+    this.handleSave("fulfillment_state", newFullfilementState);
+  }
+
+  handleChangeShippingState = (e, el) => {
+    this.setState({newFullfilementState: el.value});
+  };
+
   render() {
     const {config, params, onLink} = this.props;
-    const {customer, loading, error, order} = this.state;
-    return <div>
-      <Grid>
-        <Grid.Row columns={2}>
-          <Grid.Column>
-            <Breadcrumb>
-              <Breadcrumb.Section href="/orders" onClick={onLink}>Orders</Breadcrumb.Section>
-              <Breadcrumb.Divider/>
-              <Breadcrumb.Section active href={`/orders/${params.id}`} onClick={onLink}>{formatId(params.id)}</Breadcrumb.Section>
-            </Breadcrumb>
-          </Grid.Column>
-          <Grid.Column textAlign="right">
+    const {customer, loading, error, order, newFullfilementState} = this.state;
 
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
+    const item = params.item && EditableItems[params.item] || null;
 
-      <Divider/>
-
+    return <Layout
+      breadcrumb={[{label: "Orders", href: "/orders"}, {label: formatId(params.id), href: `/orders/${params.id}`}]}
+      onLink={onLink}
+    >
       <ErrorMessage error={error}/>
 
       <Grid columns="equal">
@@ -96,7 +119,8 @@ export default class Order extends Component {
                 </Header.Subheader>
               </Header>
 
-              <Grid columns={3} divided>
+              {item && React.createElement(item, {order, item: params.item, onLink, onSave: this.handleSave})}
+              {!item && <Grid columns={3} divided>
                 <Grid.Row>
                   <Grid.Column>
                     <h3>General Details</h3>
@@ -132,7 +156,7 @@ export default class Order extends Component {
                   </Grid.Column>
 
                 </Grid.Row>
-              </Grid>
+              </Grid>}
             </Segment>
 
             <Segment loading={loading}>
@@ -222,13 +246,23 @@ export default class Order extends Component {
             <Segment>
               <Header as="h2">
                 Shipping Status
-                <Header.Subheader>{order && order.fulfillment_state}</Header.Subheader>
+                <Header.Subheader>Shipping to {order && order.shipping_address && order.shipping_address.country}</Header.Subheader>
               </Header>
 
+              <Form onSubmit={this.handleShippingUpdate}>
+                <Form.Group>
+                  <Form.Select
+                    options={[{value: "pending", text: "Pending"}, {value: "shipped", text: "shipped"}]}
+                    value={newFullfilementState || order && order.fulfillment_state}
+                    onChange={this.handleChangeShippingState}
+                  />
+                </Form.Group>
+                {newFullfilementState && newFullfilementState != order.fulfillment_state && <Button type="submit">Update</Button>}
+              </Form>
             </Segment>
           </Grid.Column>
         </Grid.Row>
       </Grid>
-    </div>;
+    </Layout>;
   }
 }
