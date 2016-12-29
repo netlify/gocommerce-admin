@@ -1,5 +1,5 @@
 import React, {PropTypes, Component} from 'react';
-import Navigo from 'navigo';
+import director from 'director';
 import Auth from 'netlify-auth-js';
 import Commerce from 'netlify-commerce-js';
 import {WithAuthentication, Sidebar, Customers, Discounts, Order, Orders, Reports} from './Components';
@@ -24,8 +24,6 @@ const MainComponent = {
   not_found: NotFound
 };
 
-const router = new Navigo();
-
 class App extends Component {
   static contextTypes = {
     router: PropTypes.object
@@ -39,16 +37,15 @@ class App extends Component {
   }
 
   componentDidMount() {
-    router.on({
+    this.router = new director.Router({
       "/": () => this.setState({route: "reports", active: "Reports"}),
       "/orders": () => this.setState({route: "orders", active: "Orders"}),
-      "/orders/:id": (params) => this.setState({route: "order", active: "Orders", params}),
-      "/orders/:id/:item": (params) => this.setState({route: "order", active: "Orders", params}),
+      "/orders/:id": (id) => this.setState({route: "order", active: "Orders", params: {id}}),
+      "/orders/:id/:item": (id, item) => this.setState({route: "order", active: "Orders", params: {id, item}}),
       "/customers": () => this.setState({route: "customers", active: "Customers"}),
-      "/discounts": () => this.setState({route: "discounts", active: "Discounts"})
-    }).notFound(() => {
-      this.setState({route: "not_found"})
-    }).resolve();
+      "/discounts": (params, query) => this.setState({route: "discounts", active: "Discounts"})
+    }).configure({html5history: true});
+    this.router.init();
   }
 
   handleLogin = (email, password) => {
@@ -69,15 +66,15 @@ class App extends Component {
 
   handleLink = (e) => {
     e.preventDefault();
-    router.navigate(e.target.getAttribute('href'));
+    this.handlePush(e.target.getAttribute('href'));
   };
 
   handlePush = (route) => {
-    router.navigate(route);
+    this.router.setRoute(route);
   };
 
   render() {
-    const {user, route, active, params} = this.state;
+    const {user, route, active, params, query} = this.state;
 
     const component = MainComponent[route] || null;
     console.log("Component for route: %o", route, component);
@@ -87,7 +84,7 @@ class App extends Component {
         <Sidebar active={active} config={config} user={user} route={route} onLink={this.handleLink} onLogout={this.handleLogout}/>
         <div className="Main">
           {component && React.createElement(component, {
-            config, route, commerce, user, params, push: this.handlePush, onLink: this.handleLink
+            config, route, commerce, user, params, query, push: this.handlePush, onLink: this.handleLink
           })}
         </div>
       </WithAuthentication>

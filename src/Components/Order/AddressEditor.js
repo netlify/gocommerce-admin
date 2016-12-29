@@ -23,7 +23,7 @@ export default class AddressEditor extends Component {
   };
 
   render() {
-    const {order, item, onLink, onSave} = this.props;
+    const {order, onLink} = this.props;
     if (!order) { return null; }
 
     const addr = this.state;

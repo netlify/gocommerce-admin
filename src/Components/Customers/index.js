@@ -19,9 +19,8 @@ export default class Customers extends Component {
 
   componentDidMount() {
     this.props.commerce.users()
-      .then((customers) => {
-        console.log("Loaded customers: %o", customers);
-        this.setState({loading: false, customers});
+      .then(({users, pagination}) => {
+        this.setState({loading: false, customers: users, pagination, error: null});
       })
       .catch((error) => {
         console.log("Error loading customers: %o", error);

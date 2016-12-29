@@ -6,12 +6,13 @@
     "react-scripts": "0.8.4"
   },
   "dependencies": {
+    "csvexport": "^1.0.2",
     "date-fns": "^1.21.0",
+    "director": "^1.2.8",
     "history": "^4.5.0",
     "jwt-decode": "^2.1.0",
-    "navigo": "^4.0.0",
     "netlify-auth-js": "^0.5.2",
-    "netlify-commerce-js": "^2.2.0",
+    "netlify-commerce-js": "^3.0.0",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-gravatar": "^2.6.1",

@@ -1,6 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import format from 'date-fns/format';
-import {Breadcrumb, Button, Divider, Form, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
+import {Button, Form, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
 import Layout from '../Layout';
 import ErrorMessage from '../Messages/Error';
 import Address from './Address';
@@ -100,7 +100,7 @@ export default class Order extends Component {
     const {config, params, onLink} = this.props;
     const {customer, loading, error, order, newFullfilementState} = this.state;
 
-    const item = params.item && EditableItems[params.item] || null;
+    const item = params.item ? EditableItems[params.item] : null;
 
     return <Layout
       breadcrumb={[{label: "Orders", href: "/orders"}, {label: formatId(params.id), href: `/orders/${params.id}`}]}
@@ -253,11 +253,11 @@ export default class Order extends Component {
                 <Form.Group>
                   <Form.Select
                     options={[{value: "pending", text: "Pending"}, {value: "shipped", text: "shipped"}]}
-                    value={newFullfilementState || order && order.fulfillment_state}
+                    value={newFullfilementState ? newFullfilementState : order && order.fulfillment_state}
                     onChange={this.handleChangeShippingState}
                   />
                 </Form.Group>
-                {newFullfilementState && newFullfilementState != order.fulfillment_state && <Button type="submit">Update</Button>}
+                {newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
               </Form>
             </Segment>
           </Grid.Column>
