@@ -9,7 +9,7 @@ import 'csvexport';
 import './Orders.css';
 
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
-const PER_PAGE = 5;
+const PER_PAGE = 50;
 
 function formatField(label, order) {
   return order[label.toLowerCase().replace(/ /, '_')];

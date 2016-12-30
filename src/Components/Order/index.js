@@ -11,7 +11,7 @@ function formatId(id) {
   return id.split("-").pop();
 }
 
-function formatPrice(value, currency) {
+export function formatPrice(value, currency) {
   const amount = (value / 100).toFixed(2);
   switch(currency) {
     case "USD":
