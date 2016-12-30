@@ -5,7 +5,7 @@ import Pagination, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import countries from '../../data/countries.json';
-import 'csvexport';
+import 'csvexport/dist/Export.min';
 import './Orders.css';
 
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
