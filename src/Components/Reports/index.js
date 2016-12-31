@@ -45,7 +45,6 @@ export default class Reports extends Component {
   componentDidMount() {
     this.props.commerce.report('sales', {from: ts(addWeeks(new Date(), -1))})
       .then((report) => {
-        console.log("Got report: %o", report);
         this.setState({loading: false, sales: report});
         withRates().then(() => {
           this.setState({salesTotal: {
@@ -59,11 +58,19 @@ export default class Reports extends Component {
       .catch((error) => {
         this.setState({loading: false, error});
       });
+    this.props.commerce.report('products', {from: ts(addWeeks(new Date(), -1))})
+      .then((report) => {
+        console.log(report);
+        this.setState({loading: false, products: report});
+      })
+      .catch((error) => {
+        this.setState({loading: false, error});
+      })
   }
 
   render() {
-    const {onLink} = this.props;
-    const {loading, error, sales, salesTotal} = this.state;
+    const {config, onLink} = this.props;
+    const {loading, error, sales, salesTotal, products} = this.state;
 
     return <Layout breadcrumb={[{label: "Reports", href: "/"}]} onLink={onLink}>
       <ErrorMessage error={error}/>
@@ -96,6 +103,23 @@ export default class Reports extends Component {
         </Table.Footer>
       </Table>
 
+      <h2>Top Products Last Week</h2>
+      <Table>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Product</Table.HeaderCell>
+            <Table.HeaderCell>Amount Sold</Table.HeaderCell>
+            <Table.HeaderCell>Currency</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {products && products.map((row, i) => <Table.Row key={i}>
+            <Table.Cell><a href={`${config.siteURL}${row.path}`} target="_blank">{row.sku}</a></Table.Cell>
+            <Table.Cell>{formatPrice(row.total, row.currency)}</Table.Cell>
+            <Table.Cell>{row.currency}</Table.Cell>
+          </Table.Row>)}
+        </Table.Body>
+      </Table>
     </Layout>;
   }
 }
