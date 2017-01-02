@@ -1,14 +1,15 @@
+// @flow
 import React, {Component} from 'react';
 import {List, Menu} from 'semantic-ui-react';
 
-function calculatePages(current, last) {
+function calculatePages(current: number, last: number) {
   if (last <= 1) { return null; }
 
   const pages = [{name: "First", number: 1}];
   for (let page = 1; page <= last; page++) {
     if (page - current < -3) { continue; }
     if (current - page < -3) { continue; }
-    pages.push({name: page, number: page, active: page === current});
+    pages.push({name: page.toString(), number: page, active: page === current});
   }
   pages.push({name: "Last", number: last});
   return pages;
@@ -22,7 +23,11 @@ export function pageFromURL() {
   return 1;
 }
 
-export default function Pagination({current, next, last, total, perPage, onClick}) {
+type args = {
+  current: number, next: ?number, last: number, total: number,
+  perPage: number, onClick: (SyntheticEvent, Object) => void
+};
+export default function Pagination({current, next, last, total, perPage, onClick}: args) {
   const pages = calculatePages(current, last);
   if (!pages) { return null; }
 

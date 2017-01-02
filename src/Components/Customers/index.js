@@ -1,24 +1,36 @@
+// @flow
+import type {Commerce, Customer, Pagination} from '../../Types';
 import React, {PropTypes, Component} from 'react';
 import {Breadcrumb, Divider, Grid, Item, Segment} from 'semantic-ui-react';
 import ErrorMessage from '../Messages/Error';
 import Gravatar from 'react-gravatar';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 
+type props = {
+  commerce: Commerce,
+  onLink: (SyntheticEvent) => void
+};
 export default class Customers extends Component {
-  static contextTypes = {
-    router: PropTypes.object
+  props: props;
+  state: {
+    loading: boolean,
+    error: ?Object,
+    customers: ?Array<Customer>,
+    pagination: ?Pagination
   };
 
-  constructor(props) {
+  constructor(props: props) {
     super(props);
     this.state = {
       loading: true,
-      error: null
+      error: null,
+      customers: null,
+      pagination: null
     };
   }
 
   componentDidMount() {
-    this.props.commerce.users()
+    this.props.commerce.users({page: 1})
       .then(({users, pagination}) => {
         this.setState({loading: false, customers: users, pagination, error: null});
       })

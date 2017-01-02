@@ -1,3 +1,5 @@
+// @flow
+import type {Config, Currency, Commerce, Order, Customer, TransactionType} from '../../Types';
 import React, {PropTypes, Component} from 'react';
 import format from 'date-fns/format';
 import {Button, Form, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
@@ -7,11 +9,11 @@ import Address from './Address';
 import AddressEditor from './AddressEditor';
 import './styles.css';
 
-function formatId(id) {
+function formatId(id: string) {
   return id.split("-").pop();
 }
 
-export function formatPrice(value, currency) {
+export function formatPrice(value: number, currency: Currency) {
   const amount = (value / 100).toFixed(2);
   switch(currency) {
     case "USD":
@@ -34,7 +36,7 @@ function formatItemTypes(items) {
   return Object.keys(types).map((type) => `${types[type]}x${type}`).join(', ');
 }
 
-function formatTransactionType(type) {
+function formatTransactionType(type: TransactionType) {
   return {
     "charge": "paid",
     "refund": "refunded"
@@ -46,14 +48,25 @@ const EditableItems = {
   "billing_address": AddressEditor
 };
 
-export default class Order extends Component {
-  static propTypes = {
-    params: PropTypes.object
+export default class OrderView extends Component {
+  props: {
+    commerce: Commerce,
+    params: {id: string, item: null | 'shipping_address' | 'billing_address'},
+    config: Config,
+    push: (string) => void,
+    onLink: (SyntheticEvent) => void,
+  };
+  state: {
+    loading: boolean,
+    error: ?Object,
+    order: ?Order,
+    customer: ?Customer,
+    newFullfilementState: ?string
   };
 
-  constructor(props) {
+  constructor(props: Object) {
     super(props);
-    this.state = {loading: true, error: false};
+    this.state = {loading: true, error: null, order: null, customer: null, newFullfilementState: null};
   }
 
   componentDidMount() {
@@ -70,9 +83,12 @@ export default class Order extends Component {
       });
   }
 
-  handleSave = (item, data) => {
+  handleSave = (item: 'shipping_address' | 'billing_address' | 'fulfillment_state', data: Object | string) => {
     const {commerce, push} = this.props;
     const {order} = this.state;
+    if (!order) {
+      return;
+    }
 
     this.setState({loading: true});
     commerce.updateOrder(order.id, {[item]: data})
@@ -86,13 +102,15 @@ export default class Order extends Component {
       })
   };
 
-  handleShippingUpdate = (e) => {
+  handleShippingUpdate = (e: SyntheticEvent) => {
     e.preventDefault();
     const {newFullfilementState} = this.state;
-    this.handleSave("fulfillment_state", newFullfilementState);
+    if (newFullfilementState){
+      this.handleSave('fulfillment_state', newFullfilementState);
+    }
   }
 
-  handleChangeShippingState = (e, el) => {
+  handleChangeShippingState = (e: SyntheticEvent, el: HTMLInputElement) => {
     this.setState({newFullfilementState: el.value});
   };
 
@@ -257,7 +275,7 @@ export default class Order extends Component {
                     onChange={this.handleChangeShippingState}
                   />
                 </Form.Group>
-                {newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
+                {order && newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
               </Form>
             </Segment>
           </Grid.Column>

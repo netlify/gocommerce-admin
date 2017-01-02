@@ -1,8 +1,11 @@
+// @flow
 import React from "react";
 import {Breadcrumb, Grid, Divider} from 'semantic-ui-react';
 
-export default function({breadcrumb, menu, onLink, children}) {
-  const crumbs = [];
+type Link = {label: string, href: string};
+
+export default function({breadcrumb, menu, onLink, children}: Object) {
+  const crumbs: Array<Link> = [];
   breadcrumb.forEach((crumb, i) => {
     crumbs.push(
       <Breadcrumb.Section key={i} href={crumb.href} active={i === (breadcrumb.length - 1)} onClick={onLink}>

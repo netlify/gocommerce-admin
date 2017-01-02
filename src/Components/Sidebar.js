@@ -1,5 +1,14 @@
+// @flow
+import type {User} from '../Types';
 import React, {Component} from 'react';
 import {Menu, Dropdown, Icon} from 'semantic-ui-react';
+
+type Props = {
+  active: string,
+  user: ?User,
+  onLink: (e: SyntheticInputEvent) => void,
+  onLogout: () => void
+};
 
 const menuItems = [
   {name: "Reports", href: "/"},
@@ -9,6 +18,8 @@ const menuItems = [
 ];
 
 export default class SideBar extends Component {
+  props: Props;
+
   render() {
     const {active, user, onLink, onLogout} = this.props;
 

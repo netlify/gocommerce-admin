@@ -1,3 +1,5 @@
+// @flow
+import type {Config, Commerce, Currency} from '../../Types';
 import React, {Component} from 'react';
 import addWeeks from 'date-fns/add_weeks';
 import {Table} from 'semantic-ui-react';
@@ -8,8 +10,22 @@ import {formatPrice} from '../Order';
 
 const EXCHANGE_RATE_API = 'http://api.fixer.io/latest?base=USD';
 
+type SalesRow = {
+  subtotal: number,
+  taxes: number,
+  total: number,
+  currency: Currency
+};
+type SalesReport = Array<SalesRow>;
+type ProductsRow = {
+  sku: string,
+  path: string,
+  total: number,
+  currency: Currency
+};
+type ProductsReport = Array<ProductsRow>;
+
 function ts(date) {
-  console.log("Date is: %o", date);
   return parseInt(date.getTime() / 1000, 10);
 }
 
@@ -18,7 +34,6 @@ function sumUSD(sales, field) {
     if (row.currency === 'USD') {
       return sum + row[field];
     }
-    console.log("Converting %o from %o (%o)", row[field], row.currency, fx);
     return sum + fx.convert(row[field], {from: row.currency, to: 'USD'});
   }, 0);
 }
@@ -36,10 +51,26 @@ function withRates() {
     })
 }
 
+type props = {
+  config: Config,
+  commerce: Commerce,
+  onLink: (SyntheticEvent) => void
+};
 export default class Reports extends Component {
-  constructor(props) {
+  props: props;
+  state: {
+    loading: boolean,
+    error: ?Object,
+    sales: ?SalesReport,
+    salesTotal: ?SalesRow,
+    products: ?ProductsReport
+  };
+
+  constructor(props: props) {
     super(props);
-    this.state = {loading: true, sales: null, error: null}
+    this.state = {
+      loading: true, sales: null, products: null, error: null, salesTotal: null
+    };
   }
 
   componentDidMount() {

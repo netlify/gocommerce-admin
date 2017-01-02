@@ -1,15 +1,24 @@
+// @flow
+import type {User} from './Types';
 import React, {PropTypes, Component} from 'react';
 import director from 'director';
 import Auth from 'netlify-auth-js';
 import Commerce from 'netlify-commerce-js';
-import {WithAuthentication, Sidebar, Customers, Discounts, Order, Orders, Reports} from './Components';
+import Sidebar from './Components/Sidebar';
+import {WithAuthentication, Customers, Discounts, Order, Orders, Reports} from './Components';
 import 'semantic-ui-css/semantic.css';
 import './App.css';
 
 const env = process.env.REACT_APP_ENV || 'dev';
+// $FlowFixMe - webpack handles this dynamic require based on the environment
 const config = require(`./config/${env}.json`);
 const auth = new Auth({APIUrl: config.netlifyAuth});
 const commerce = new Commerce({APIUrl: config.netlifyCommerce});
+
+type Router = {
+  init: () => void,
+  setRoute: (string) => void
+};
 
 function NotFound(props) {
   return <h1>Not Found!</h1>;
@@ -25,15 +34,26 @@ const MainComponent = {
 };
 
 class App extends Component {
+  props: {};
+  state: {
+    user: ?User,
+    route: 'reports' | 'orders' | 'order' | 'customers' | 'discounts',
+    active: 'Reports' | 'Orders' | 'Customers' | 'Discounts',
+    params: {},
+    query: ?{}
+  };
+
+  router: Router;
+
   static contextTypes = {
     router: PropTypes.object
   };
 
-  constructor(props) {
+  constructor(props : {}) {
     super(props);
     const user =  auth.currentUser();
     commerce.setUser(user);
-    this.state = {user};
+    this.state = {user, route: "reports", active: "Reports", params: {}, query: null};
   }
 
   componentDidMount() {
@@ -48,7 +68,7 @@ class App extends Component {
     this.router.init();
   }
 
-  handleLogin = (email, password) => {
+  handleLogin = (email: string, password: string) => {
     return auth.login(email, password)
       .then((user) => {
         user.persistSession(user);
@@ -64,12 +84,15 @@ class App extends Component {
     this.setState({user: null});
   };
 
-  handleLink = (e) => {
+  handleLink = (e: SyntheticInputEvent) => {
     e.preventDefault();
-    this.handlePush(e.target.getAttribute('href'));
+    const path = e.target.getAttribute('href');
+    if (path) {
+      this.handlePush(path);
+    }
   };
 
-  handlePush = (route) => {
+  handlePush = (route: string) => {
     this.router.setRoute(route);
   };
 
@@ -81,7 +104,14 @@ class App extends Component {
 
     return (<div className="App">
       <WithAuthentication user={user} onLogin={this.handleLogin}>
-        <Sidebar active={active} config={config} user={user} route={route} onLink={this.handleLink} onLogout={this.handleLogout}/>
+        <Sidebar
+          active={active}
+          config={config}
+          user={user}
+          route={route}
+          onLink={this.handleLink}
+          onLogout={this.handleLogout}
+        />
         <div className="Main">
           {component && React.createElement(component, {
             config, route, commerce, user, params, query, push: this.handlePush, onLink: this.handleLink

@@ -1,21 +1,24 @@
+// @flow
+import type {Commerce, Pagination, Order, LineItem, Address} from '../../Types';
 import React, {Component} from 'react';
 import {Button, Checkbox, Grid, Dimmer, Dropdown, List, Loader, Table} from 'semantic-ui-react';
 import Layout from '../Layout';
-import Pagination, {pageFromURL} from '../Pagination';
+import PaginationView, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import countries from '../../data/countries.json';
 import 'csvexport/dist/Export.min';
 import './Orders.css';
 
+
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
 const PER_PAGE = 50;
 
-function formatField(label, order) {
+function formatField(label: string, order: Order) {
   return order[label.toLowerCase().replace(/ /, '_')];
 }
 
-function formatLineItems(order, csv) {
+function formatLineItems(order: Order, csv: boolean) {
   if (csv) {
     return order.line_items && order.line_items.map((item) => `${item.quantity} x ${item.title}`).join(', ');
   }
@@ -24,9 +27,9 @@ function formatLineItems(order, csv) {
 </span>)
 }
 
-function formatAddress(field) {
-  return (order, csv) => {
-    const addr = order[field];
+function formatAddress(field: 'shipping_address' | 'billing_address') {
+  return (order: Order, csv: boolean) => {
+    const addr: Address = order[field];
     if (csv) {
       return [
         `${addr.first_name} ${addr.last_name}`,
@@ -44,7 +47,7 @@ function formatAddress(field) {
   };
 }
 
-function formatPriceField(field) {
+function formatPriceField(field: 'total' | 'taxes' | 'subtotal') {
   return (order) => {
     const amount = (order[field] / 100).toFixed(2);
     switch(order.currency) {
@@ -58,7 +61,7 @@ function formatPriceField(field) {
   };
 }
 
-function formatDateField(field) {
+function formatDateField(field: 'created_at' | 'updated_at') {
   return (order, csv) => {
     if (csv) { return JSON.stringify(order[field]); }
     return distanceInWordsToNow(order[field]) + " ago";
@@ -99,8 +102,14 @@ const enabledFields = {
   "Updated At":false
 };
 
-class Order extends Component {
-  handleClick = (e) => {
+class OrderDetail extends Component {
+  props: {
+    order: Order,
+    enabledFields: {[key: string]: boolean },
+    onLink: (any) => void
+  };
+
+  handleClick = (e: SyntheticEvent) => {
     this.props.onLink({
       preventDefault: e.preventDefault,
       target: {getAttribute: (a) => ({href: `/orders/${this.props.order.id}`}[a])}
@@ -119,15 +128,38 @@ class Order extends Component {
 }
 
 export default class Orders extends Component {
-  constructor(props) {
+  props: {
+    commerce: Commerce,
+    push: (string) => void,
+    onLink: (HTMLElement) => void
+  };
+  state: {
+    loading: boolean,
+    downloading: boolean,
+    error: ?any,
+    filters: Array<'tax' | 'shipping_countries'>,
+    page: number,
+    enabledFields: {[key: string]: boolean},
+    tax: boolean,
+    shippingCountries: ?Array<string>,
+    orders: ?Array<Order>,
+    pagination: ?Pagination
+  };
+
+  constructor(props: Object) {
     super(props);
     const storedFields = localStorage.getItem(STORED_FIELDS_KEY);
     this.state = {
       loading: true,
+      downloading: false,
       error: null,
       filters: [],
       page: pageFromURL(),
-      enabledFields: storedFields ? JSON.parse(storedFields) : Object.assign({}, enabledFields)
+      enabledFields: storedFields ? JSON.parse(storedFields) : Object.assign({}, enabledFields),
+      tax: false,
+      shippingCountries: null,
+      orders: null,
+      pagination: null
     };
   }
 
@@ -135,14 +167,14 @@ export default class Orders extends Component {
     this.loadOrders();
   }
 
-  handleToggleField = (e, el) => {
+  handleToggleField = (e: SyntheticEvent, el: {name: string}) => {
     const {enabledFields} = this.state;
     const updated = Object.assign({}, enabledFields, {[el.name]: !enabledFields[el.name]});
     this.setState({enabledFields: updated});
     localStorage.setItem(STORED_FIELDS_KEY, JSON.stringify(updated));
   };
 
-  handleTax = (e) => {
+  handleTax = (e: SyntheticEvent) => {
     e.preventDefault();
     const {tax, filters} = this.state;
     if (tax) {
@@ -152,7 +184,7 @@ export default class Orders extends Component {
     }
   };
 
-  handleCountries = (e, el) => {
+  handleCountries = (e: SyntheticEvent, el: {value: Array<string>}) => {
     const {shippingCountries, filters} = this.state;
     if (JSON.stringify(el.value) === JSON.stringify(shippingCountries)) {
       return;
@@ -165,12 +197,12 @@ export default class Orders extends Component {
     }
   };
 
-  handlePage = (e, el) => {
+  handlePage = (e: SyntheticEvent, el: {'data-number': string}) => {
     e.preventDefault();
     this.changePage(parseInt(el['data-number'], 10));
   };
 
-  handleDownload = (e) => {
+  handleDownload = (e: SyntheticEvent) => {
     e.preventDefault();
     const exporter = window.Export.create({filename: 'orders.csv'});
     this.setState({downloading: true});
@@ -192,7 +224,7 @@ export default class Orders extends Component {
       .catch((error) => this.setState({downloading: false, error}));
   }
 
-  changePage(page) {
+  changePage(page: number) {
     let location = document.location.href;
     if (location.match(/page=\d+/)) {
       location = location.replace(/page=\d+/, `page=${page}`)
@@ -219,21 +251,19 @@ export default class Orders extends Component {
       });
   }
 
-  orderQuery(page) {
-    const query = {user_id: "all", per_page: PER_PAGE, page: page || this.state.page};
+  orderQuery(page: ?number) {
+    const query: Object = {
+      user_id: "all",
+      per_page: PER_PAGE,
+      page: page || this.state.page
+    };
     this.state.filters.forEach((filter) => {
-      query[filter] = this[`${filter}Filter`].call(this);
+      query[filter] = OrdersFilters[filter](this.state);
     });
     return query;
   }
 
-  taxFilter() { return 'true'; }
-
-  shipping_countriesFilter() {
-    return this.state.shippingCountries.join(',');
-  }
-
-  downloadAll(page) {
+  downloadAll(page: ?number) {
     return this.props.commerce.orderHistory(this.orderQuery(page || 1))
       .then(({orders, pagination}) => (
         pagination.last === pagination.current ? orders : this.downloadAll(pagination.next).then(o => orders.concat(o))
@@ -294,12 +324,21 @@ export default class Orders extends Component {
           </Table.Header>
           <Table.Body>
             {orders && orders.map((order) => (
-              <Order key={order.id} order={order} enabledFields={enabledFields} onLink={onLink}/>
+              <OrderDetail key={order.id} order={order} enabledFields={enabledFields} onLink={onLink}/>
             ))}
           </Table.Body>
         </Table>
-        <Pagination {...pagination} perPage={PER_PAGE} onClick={this.handlePage}/>
+        <PaginationView {...pagination} perPage={PER_PAGE} onClick={this.handlePage}/>
       </Dimmer.Dimmable>
     </Layout>;
   }
 }
+
+const OrdersFilters = {
+    tax() {
+      return true;
+    },
+    shipping_countries(state) {
+      return state.shippingCountries && state.shippingCountries.join(',');
+    }
+  };
