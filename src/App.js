@@ -11,20 +11,20 @@ import './App.css';
 import config from './config/default.json';
 
 const env = process.env.REACT_APP_ENV || 'dev';
-const auth = new Auth({APIUrl: config.netlifyAuth});
-const commerce = new Commerce({APIUrl: config.netlifyCommerce});
-
 if (process.env.REACT_APP_SITE_URL) {
   config.siteURL = process.env.REACT_APP_SITE_URL;
 }
 
 if (process.env.REACT_APP_NETLIFY_AUTH) {
-  config.siteURL = process.env.REACT_APP_NETLIFY_AUTH;
+  config.netlifyAuth = process.env.REACT_APP_NETLIFY_AUTH;
 }
 
 if (process.env.REACT_APP_NETLIFY_COMMERCE) {
-  config.siteURL = process.env.REACT_APP_NETLIFY_COMMERCE;
+  config.netlifyCommerce = process.env.REACT_APP_NETLIFY_COMMERCE;
 }
+
+const auth = new Auth({APIUrl: config.netlifyAuth});
+const commerce = new Commerce({APIUrl: config.netlifyCommerce});
 
 type Router = {
   init: () => void,
