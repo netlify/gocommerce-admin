@@ -8,12 +8,23 @@ import Sidebar from './Components/Sidebar';
 import {WithAuthentication, Customers, Discounts, Order, Orders, Reports} from './Components';
 import 'semantic-ui-css/semantic.css';
 import './App.css';
+import config from './config/default.json';
 
 const env = process.env.REACT_APP_ENV || 'dev';
-// $FlowFixMe - webpack handles this dynamic require based on the environment
-const config = require(`./config/${env}.json`);
 const auth = new Auth({APIUrl: config.netlifyAuth});
 const commerce = new Commerce({APIUrl: config.netlifyCommerce});
+
+if (process.env.REACT_APP_SITE_URL) {
+  config.siteURL = process.env.REACT_APP_SITE_URL;
+}
+
+if (process.env.REACT_APP_NETLIFY_AUTH) {
+  config.siteURL = process.env.REACT_APP_NETLIFY_AUTH;
+}
+
+if (process.env.REACT_APP_NETLIFY_COMMERCE) {
+  config.siteURL = process.env.REACT_APP_NETLIFY_COMMERCE;
+}
 
 type Router = {
   init: () => void,
@@ -29,7 +40,6 @@ const MainComponent = {
   orders: Orders,
   order: Order,
   customers: Customers,
-  discounts: Discounts,
   not_found: NotFound
 };
 
@@ -63,7 +73,6 @@ class App extends Component {
       "/orders/:id": (id) => this.setState({route: "order", active: "Orders", params: {id}}),
       "/orders/:id/:item": (id, item) => this.setState({route: "order", active: "Orders", params: {id, item}}),
       "/customers": () => this.setState({route: "customers", active: "Customers"}),
-      "/discounts": (params, query) => this.setState({route: "discounts", active: "Discounts"})
     }).configure({html5history: true});
     this.router.init();
   }
@@ -100,7 +109,6 @@ class App extends Component {
     const {user, route, active, params, query} = this.state;
 
     const component = MainComponent[route] || null;
-    console.log("Component for route: %o", route, component);
 
     return (<div className="App">
       <WithAuthentication user={user} onLogin={this.handleLogin}>

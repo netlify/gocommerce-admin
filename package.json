@@ -4,7 +4,7 @@
   "private": true,
   "devDependencies": {
     "flow-bin": "^0.37.4",
-    "react-scripts": "0.8.4"
+    "react-scripts": "0.9.5"
   },
   "dependencies": {
     "csvexport": "^1.0.2",

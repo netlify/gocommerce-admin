@@ -13,8 +13,7 @@ type Props = {
 const menuItems = [
   {name: "Reports", href: "/"},
   {name: "Orders", href: "/orders"},
-  {name: "Customers", href: "/customers"},
-  {name: "Discounts", href: "/discounts"}
+  {name: "Customers", href: "/customers"}
 ];
 
 export default class SideBar extends Component {
