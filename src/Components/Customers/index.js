@@ -42,7 +42,7 @@ export default class Customers extends Component {
 
   search = (e: SyntheticEvent) => {
     this.loadUsers()
-  }
+  };
 
   loadUsers = () => {
     this.setState({loading: true});
@@ -54,7 +54,7 @@ export default class Customers extends Component {
         console.log("Error loading customers: %o", error);
         this.setState({loading: false, error});
       });
-  }
+  };
 
   userQuery(page: ?number) {
     const query: Object = {

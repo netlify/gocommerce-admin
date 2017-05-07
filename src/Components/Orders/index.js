@@ -1,7 +1,7 @@
 // @flow
-import type {Commerce, Pagination, Order, LineItem, Address} from '../../Types';
+import type {Commerce, Pagination, Order, Address} from '../../Types';
 import React, {Component} from 'react';
-import {Button, Checkbox, Grid, Dimmer, Dropdown, List, Loader, Table, Input} from 'semantic-ui-react';
+import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input} from 'semantic-ui-react';
 import Layout from '../Layout';
 import PaginationView, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
@@ -143,7 +143,8 @@ export default class Orders extends Component {
     tax: boolean,
     shippingCountries: ?Array<string>,
     orders: ?Array<Order>,
-    pagination: ?Pagination
+    pagination: ?Pagination,
+    search: ?string
   };
 
   constructor(props: Object) {
@@ -159,7 +160,10 @@ export default class Orders extends Component {
       tax: false,
       shippingCountries: null,
       orders: null,
-      pagination: null
+      pagination: null,
+      email: false,
+      item: false,
+      search: null
     };
   }
 
@@ -222,7 +226,15 @@ export default class Orders extends Component {
         exporter.downloadCsv(rows);
       })
       .catch((error) => this.setState({downloading: false, error}));
-  }
+  };
+
+  handleSearchInput = (e: SyntheticEvent, el: {value: ?string}) => {
+    this.setState({search: el.value ? el.value : null});
+  };
+
+  search = (e: SyntheticEvent) => {
+    console.log(this.state)
+  };
 
   changePage(page: number) {
     let location = document.location.href;
@@ -281,7 +293,10 @@ export default class Orders extends Component {
             <Loader active={loading}>Loading orders...</Loader>
         </Dimmer>
 
-        <Input type="search" action="Search" placeholder="Search..." className="search-input search-padding" name="search"/>
+        <Input type="search" placeholder="Search..." className="search-input search-padding" onChange={this.handleSearchInput}>
+          <input />
+          <Button type='submit' onClick={this.search}>Search</Button>
+        </Input>
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
@@ -335,11 +350,27 @@ export default class Orders extends Component {
   }
 }
 
+function parseSearchToken(token) {
+  return (searchString) => (
+    searchString.split(' ')
+      .filter(val => val)
+      .map(q => q.split[':'])
+      .filter(qualified => qualified.length == 2 && qualified[0] === token && qualified[1] != null)
+      .map(emailQuery => emailQuery[1])
+  )
+}
+
 const OrdersFilters = {
-    tax() {
-      return true;
-    },
-    shipping_countries(state) {
-      return state.shippingCountries && state.shippingCountries.join(',');
-    }
-  };
+  tax() {
+    return true;
+  },
+  shipping_countries(state) {
+    return state.shippingCountries && state.shippingCountries.join(',');
+  },
+  email(state) {
+    return parseSearchToken('email')(state.search)
+  },
+  item(state) {
+    return parseSearchToken('item')(state.search)
+  }
+};
