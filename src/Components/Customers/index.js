@@ -26,29 +26,43 @@ export default class Customers extends Component {
       loading: true,
       error: null,
       customers: null,
+      page: 1,
       pagination: null,
       search: null
     };
   }
 
   componentDidMount() {
-    this.props.commerce.users({page: 1})
+    this.loadUsers()
+  }
+
+  handleSearchInput = (e: SyntheticEvent, el: {value: ?string}) => {
+    this.setState({search: el.value ? el.value : null});
+  };
+
+  search = (e: SyntheticEvent) => {
+    this.loadUsers()
+  }
+
+  loadUsers = () => {
+    this.setState({loading: true});
+    this.props.commerce.users(this.userQuery())
       .then(({users, pagination}) => {
         this.setState({loading: false, customers: users, pagination, error: null});
       })
       .catch((error) => {
-        console.log("Error loading  customers: %o", error);
+        console.log("Error loading customers: %o", error);
         this.setState({loading: false, error});
       });
   }
 
-  handleSearchInput = (e: SyntheticEvent, el: {value: ?string}) => {
-    this.setState({search: el.value ? el.value : null})
-  };
-
-  search = (e: SyntheticEvent) => {
-    console.log(this.state);
+  userQuery(page: ?number) {
+    const query: Object = {
+      page: page || this.state.page
+    };
+    return query;
   }
+
 
   render() {
     const {onLink} = this.props;
