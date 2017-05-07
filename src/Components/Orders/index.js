@@ -1,7 +1,7 @@
 // @flow
 import type {Commerce, Pagination, Order, Address} from '../../Types';
 import React, {Component} from 'react';
-import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input} from 'semantic-ui-react';
+import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input, Select} from 'semantic-ui-react';
 import Layout from '../Layout';
 import PaginationView, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
@@ -282,6 +282,11 @@ export default class Orders extends Component {
       ));
   };
 
+  searchOptions = [
+    { key: 'email', text: 'Email', value: 'email' },
+    { key: 'items', text: 'Items', value: 'items' },
+  ]
+
   render() {
     const {onLink} = this.props;
     const {loading, downloading, error, orders, pagination, tax, enabledFields} = this.state;
@@ -293,8 +298,9 @@ export default class Orders extends Component {
             <Loader active={loading}>Loading orders...</Loader>
         </Dimmer>
 
-        <Input type="search" placeholder="Search..." className="search-input search-padding" onChange={this.handleSearchInput}>
+        <Input action type="search" placeholder="Search..." className="search-input search-padding" onChange={this.handleSearchInput}>
           <input />
+          <Select compact options={this.searchOptions} defaultValue='email' />
           <Button type='submit' onClick={this.search}>Search</Button>
         </Input>
         <Grid>
@@ -350,16 +356,6 @@ export default class Orders extends Component {
   }
 }
 
-function parseSearchToken(token) {
-  return (searchString) => (
-    searchString.split(' ')
-      .filter(val => val)
-      .map(q => q.split[':'])
-      .filter(qualified => qualified.length == 2 && qualified[0] === token && qualified[1] != null)
-      .map(emailQuery => emailQuery[1])
-  )
-}
-
 const OrdersFilters = {
   tax() {
     return true;
@@ -368,9 +364,9 @@ const OrdersFilters = {
     return state.shippingCountries && state.shippingCountries.join(',');
   },
   email(state) {
-    return parseSearchToken('email')(state.search)
+    return state.search
   },
   item(state) {
-    return parseSearchToken('item')(state.search)
+    return state.search
   }
 };
