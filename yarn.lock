@@ -2310,6 +2310,10 @@ globby@^5.0.0:
     pify "^2.0.0"
     pinkie-promise "^2.0.0"
 
+gocommerce-js@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/gocommerce-js/-/gocommerce-js-1.1.1.tgz#762da203accfa0258c3e021cde391ea57e8aefd9"
+
 graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.1.9:
   version "4.1.11"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.11.tgz#0e8bdfe4d1ddb8854d64e04ea7c00e2a026e5658"
@@ -3481,12 +3485,6 @@ negotiator@0.6.1:
 netlify-auth-js@^0.5.2:
   version "0.5.5"
   resolved "https://registry.yarnpkg.com/netlify-auth-js/-/netlify-auth-js-0.5.5.tgz#8753018407c08757b941df9c1e8dd5fc99c4ad29"
-  dependencies:
-    micro-api-client "^2.0.0"
-
-netlify-commerce-js@^3.1.0:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/netlify-commerce-js/-/netlify-commerce-js-3.6.1.tgz#421b49ff2a265bdc250a5845aacbbe2903c10ca5"
   dependencies:
     micro-api-client "^2.0.0"
 

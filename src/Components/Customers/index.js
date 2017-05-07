@@ -1,7 +1,7 @@
 // @flow
 import type {Commerce, Customer, Pagination} from '../../Types';
 import React, {PropTypes, Component} from 'react';
-import {Breadcrumb, Divider, Grid, Item, Segment} from 'semantic-ui-react';
+import {Breadcrumb, Divider, Grid, Item, Segment, Input} from 'semantic-ui-react';
 import ErrorMessage from '../Messages/Error';
 import Gravatar from 'react-gravatar';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
@@ -60,6 +60,7 @@ export default class Customers extends Component {
 
       <Divider/>
 
+      <Input type="search" action="Search" placeholder="Search..." className="search-input" name="search"/>
       <ErrorMessage error={error}/>
 
       <Segment loading={loading}>

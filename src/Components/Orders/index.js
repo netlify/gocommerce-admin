@@ -1,7 +1,7 @@
 // @flow
 import type {Commerce, Pagination, Order, LineItem, Address} from '../../Types';
 import React, {Component} from 'react';
-import {Button, Checkbox, Grid, Dimmer, Dropdown, List, Loader, Table} from 'semantic-ui-react';
+import {Button, Checkbox, Grid, Dimmer, Dropdown, List, Loader, Table, Input} from 'semantic-ui-react';
 import Layout from '../Layout';
 import PaginationView, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
@@ -281,10 +281,11 @@ export default class Orders extends Component {
             <Loader active={loading}>Loading orders...</Loader>
         </Dimmer>
 
-
+        <Input type="search" action="Search" placeholder="Search..." className="search-input search-padding" name="search"/>
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
+
               <Button toggle active={tax} onClick={this.handleTax}>
                 Includes Tax
               </Button>
