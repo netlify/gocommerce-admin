@@ -60,6 +60,9 @@ export default class Customers extends Component {
     const query: Object = {
       page: page || this.state.page
     };
+    if (this.state.search) {
+      query.email = UsersFilters.email(this.state)
+    }
     return query;
   }
 
@@ -107,3 +110,9 @@ export default class Customers extends Component {
     </div>;
   }
 }
+
+const UsersFilters = {
+  email(state) {
+    return state.search.split(' ').filter(val => val).join('+');
+  }
+};
