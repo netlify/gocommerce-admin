@@ -113,6 +113,6 @@ export default class Customers extends Component {
 
 const UsersFilters = {
   email(state) {
-    return state.search.split(' ').filter(val => val).join('+');
+    return state.search;
   }
 };
