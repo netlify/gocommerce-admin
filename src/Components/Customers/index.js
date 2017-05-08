@@ -87,7 +87,7 @@ export default class Customers extends Component {
 
       <Divider/>
 
-      <Input type="search" placeholder="Search..." className="search-input" onChange={this.handleSearchInput}>
+      <Input action type="search" placeholder="Search..." className="search-input" onChange={this.handleSearchInput}>
         <input />
         <Button type='submit' onClick={this.search}>Search</Button>
       </Input>
