@@ -91,7 +91,6 @@ export default class Reports extends Component {
       });
     this.props.commerce.report('products', {from: ts(addWeeks(new Date(), -1))})
       .then((report) => {
-        console.log(report);
         this.setState({loading: false, products: report});
       })
       .catch((error) => {
