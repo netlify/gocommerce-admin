@@ -144,6 +144,7 @@ export default class Orders extends Component {
     shippingCountries: ?Array<string>,
     orders: ?Array<Order>,
     pagination: ?Pagination,
+    searchScope: string,
     search: ?string
   };
 
@@ -163,6 +164,7 @@ export default class Orders extends Component {
       pagination: null,
       email: false,
       item: false,
+      searchScope: 'email',
       search: null
     };
   }
@@ -232,8 +234,25 @@ export default class Orders extends Component {
     this.setState({search: el.value ? el.value : null});
   };
 
+  handleSearchScope = (e: SyntheticEvent, el: {value: ?string}) => {
+    this.setState({searchScope: el.value})
+  }
+
   search = (e: SyntheticEvent) => {
     console.log(this.state)
+    const {search, searchScope, filters} = this.state;
+    const newFilters = filters.slice()
+    const searchFilters = this.searchOptions.map(opt => opt.value)
+
+    // Add search filter if missing
+    if (search) {
+      if (!newFilters.includes(searchScope)) newFilters.push(searchScope)
+      newFilters.filter(f => f !== searchScope && searchFilters.some(scope => scope !== f))
+    } else {
+      newFilters.filter(f => searchFilters.some(scope => scope !== f))
+    }
+
+    this.setState({filters: newFilters}, this.loadOrders);
   };
 
   changePage(page: number) {
@@ -289,7 +308,7 @@ export default class Orders extends Component {
 
   render() {
     const {onLink} = this.props;
-    const {loading, downloading, error, orders, pagination, tax, enabledFields} = this.state;
+    const {loading, downloading, error, orders, pagination, tax, enabledFields, searchScope} = this.state;
 
     return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
       <Dimmer.Dimmable dimmed={loading}>
@@ -298,9 +317,14 @@ export default class Orders extends Component {
             <Loader active={loading}>Loading orders...</Loader>
         </Dimmer>
 
-        <Input action type="search" placeholder="Search..." className="search-input search-padding" onChange={this.handleSearchInput}>
+        <Input
+          action
+          type="search"
+          placeholder="Search..."
+          className="search-input search-padding"
+          onChange={this.handleSearchInput}>
           <input />
-          <Select compact options={this.searchOptions} defaultValue='email' />
+          <Select compact options={this.searchOptions} value={searchScope} onChange={this.handleSearchScope} />
           <Button type='submit' onClick={this.search}>Search</Button>
         </Input>
         <Grid>
@@ -366,7 +390,7 @@ const OrdersFilters = {
   email(state) {
     return state.search
   },
-  item(state) {
+  items(state) {
     return state.search
   }
 };
