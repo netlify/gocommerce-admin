@@ -288,7 +288,6 @@ export default class Orders extends Component {
     this.state.filters.forEach((filter) => {
       query[filter] = OrdersFilters[filter](this.state);
     });
-    console.log(query)
     return query;
   }
 
