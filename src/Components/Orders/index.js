@@ -162,8 +162,6 @@ export default class Orders extends Component {
       shippingCountries: null,
       orders: null,
       pagination: null,
-      email: false,
-      item: false,
       searchScope: 'email',
       search: null
     };
@@ -239,18 +237,17 @@ export default class Orders extends Component {
   }
 
   search = (e: SyntheticEvent) => {
-    console.log(this.state)
     const {search, searchScope, filters} = this.state;
-    const newFilters = filters.slice()
-    const searchFilters = this.searchOptions.map(opt => opt.value)
+    let newFilters = filters.slice();
+    let filtersToRemove = this.searchOptions.map(opt => opt.value)
 
-    // Add search filter if missing
     if (search) {
       if (!newFilters.includes(searchScope)) newFilters.push(searchScope)
-      newFilters.filter(f => f !== searchScope && searchFilters.some(scope => scope !== f))
-    } else {
-      newFilters.filter(f => searchFilters.some(scope => scope !== f))
+      filtersToRemove = filtersToRemove.filter(val => val !== searchScope)
     }
+
+    // Remove any non-active search filters
+    newFilters = newFilters.filter(f => !filtersToRemove.some(ftr => f === ftr))
 
     this.setState({filters: newFilters}, this.loadOrders);
   };
@@ -291,6 +288,7 @@ export default class Orders extends Component {
     this.state.filters.forEach((filter) => {
       query[filter] = OrdersFilters[filter](this.state);
     });
+    console.log(query)
     return query;
   }
 
