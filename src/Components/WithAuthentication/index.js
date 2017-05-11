@@ -24,7 +24,6 @@ export default class WithAuthentication extends Component {
   render() {
     const {user, children} = this.props;
     const {loading, error} = this.state;
-    console.log("User is: %o, error: %o", user, error);
     return <div>
       {<LoginForm show={!user} loading={loading} error={error} onLogin={this.handleLogin}/>}
       {user && children}

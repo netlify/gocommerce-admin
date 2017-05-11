@@ -1,9 +1,0 @@
-{
-  "extends": [
-    "eslint-config-netlify",
-    "plugin:flowtype/recommended"
-  ],
-  "plugins": [
-    "flowtype"
-  ]
-}

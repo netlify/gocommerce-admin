@@ -137,14 +137,14 @@ export default class Orders extends Component {
     loading: boolean,
     downloading: boolean,
     error: ?any,
-    filters: Array<'tax' | 'shipping_countries'>,
+    filters: Array<'tax' | 'shipping_countries' | 'email' | 'items'>,
     page: number,
     enabledFields: {[key: string]: boolean},
     tax: boolean,
     shippingCountries: ?Array<string>,
     orders: ?Array<Order>,
     pagination: ?Pagination,
-    searchScope: string,
+    searchScope: 'email' | 'items',
     search: ?string
   };
 
@@ -232,22 +232,32 @@ export default class Orders extends Component {
     this.setState({search: el.value ? el.value : null});
   };
 
-  handleSearchScope = (e: SyntheticEvent, el: {value: ?string}) => {
-    this.setState({searchScope: el.value})
-  }
+  handleSearchScope = (e: SyntheticEvent, el: {value: string}) => {
+    switch (el.value) {
+      case 'email':
+        this.setState({searchScope: 'email'});
+      case 'items':
+        this.setState({searchScope: 'items'});
+      default:
+        this.setState({error: `Bad search scope: '${el.value}'`});
+    }
+  };
 
   search = (e: SyntheticEvent) => {
     const {search, searchScope, filters} = this.state;
+
+    e.preventDefault();
+
     let newFilters = filters.slice();
     let filtersToRemove = this.searchOptions.map(opt => opt.value)
 
     if (search) {
-      if (!newFilters.includes(searchScope)) newFilters.push(searchScope)
-      filtersToRemove = filtersToRemove.filter(val => val !== searchScope)
+      if (!newFilters.includes(searchScope)) newFilters.push(searchScope);
+      filtersToRemove = filtersToRemove.filter(val => val !== searchScope);
     }
 
     // Remove any non-active search filters
-    newFilters = newFilters.filter(f => !filtersToRemove.some(ftr => f === ftr))
+    newFilters = newFilters.filter(f => !filtersToRemove.some(ftr => f === ftr));
 
     this.setState({filters: newFilters}, this.loadOrders);
   };
@@ -268,7 +278,7 @@ export default class Orders extends Component {
     this.props.commerce.orderHistory(this.orderQuery())
       .then((response) => {
         const {orders, pagination} = response;
-        if (pagination.last < this.state.page) {
+        if (pagination.last < this.state.page && this.state.page !== 1) {
           return this.changePage(1);
         }
         this.setState({loading: false, orders, pagination, error: null});
@@ -314,16 +324,18 @@ export default class Orders extends Component {
             <Loader active={loading}>Loading orders...</Loader>
         </Dimmer>
 
-        <Input
-          action
-          type="search"
-          placeholder="Search..."
-          className="search-input search-padding"
-          onChange={this.handleSearchInput}>
-          <input />
-          <Select compact options={this.searchOptions} value={searchScope} onChange={this.handleSearchScope} />
-          <Button type='submit' onClick={this.search}>Search</Button>
-        </Input>
+        <form onSubmit={this.search}>
+          <Input
+            action
+            type="search"
+            placeholder="Search..."
+            className="search-input search-padding"
+            onChange={this.handleSearchInput}>
+            <input />
+            <Select compact options={this.searchOptions} value={searchScope} onChange={this.handleSearchScope} />
+            <Button type='submit'>Search</Button>
+          </Input>
+        </form>
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>

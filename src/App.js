@@ -47,8 +47,8 @@ class App extends Component {
   props: {};
   state: {
     user: ?User,
-    route: 'reports' | 'orders' | 'order' | 'customers' | 'discounts',
-    active: 'Reports' | 'Orders' | 'Customers' | 'Discounts',
+    route: 'reports' | 'orders' | 'order' | 'customers',
+    active: 'Reports' | 'Orders' | 'Customers',
     params: {},
     query: ?{}
   };

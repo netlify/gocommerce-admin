@@ -17,7 +17,8 @@ export default class Customers extends Component {
     error: ?Object,
     customers: ?Array<Customer>,
     pagination: ?Pagination,
-    search: ?string
+    search: ?string,
+    page: number
   };
 
   constructor(props: props) {
@@ -41,7 +42,8 @@ export default class Customers extends Component {
   };
 
   search = (e: SyntheticEvent) => {
-    this.loadUsers()
+    e.preventDefault();
+    this.loadUsers();
   };
 
   loadUsers = () => {
@@ -87,10 +89,12 @@ export default class Customers extends Component {
 
       <Divider/>
 
-      <Input action type="search" placeholder="Search..." className="search-input" onChange={this.handleSearchInput}>
-        <input />
-        <Button type='submit' onClick={this.search}>Search</Button>
-      </Input>
+      <form onSubmit={this.search}>
+        <Input action type="search" placeholder="Search..." className="search-input" onChange={this.handleSearchInput}>
+          <input />
+          <Button type='submit'>Search</Button>
+        </Input>
+      </form>
       <ErrorMessage error={error}/>
 
       <Segment loading={loading}>
