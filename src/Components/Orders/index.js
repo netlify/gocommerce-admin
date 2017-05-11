@@ -236,8 +236,10 @@ export default class Orders extends Component {
     switch (el.value) {
       case 'email':
         this.setState({searchScope: 'email'});
+        return;
       case 'items':
         this.setState({searchScope: 'items'});
+        return;
       default:
         this.setState({error: `Bad search scope: '${el.value}'`});
     }
