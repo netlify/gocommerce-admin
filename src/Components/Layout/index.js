@@ -13,7 +13,7 @@ export default function({breadcrumb, menu, onLink, children}: Object) {
       </Breadcrumb.Section>
     );
     if (i < breadcrumb.length - 1) {
-      crumbs.push(<Breadcrumb.Divider/>);
+      crumbs.push(<Breadcrumb.Divider key={`divider-${i}`}/>);
     }
   });
 

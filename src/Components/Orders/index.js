@@ -1,7 +1,7 @@
 // @flow
-import type {Commerce, Pagination, Order, LineItem, Address} from '../../Types';
+import type {Commerce, Pagination, Order, Address} from '../../Types';
 import React, {Component} from 'react';
-import {Button, Checkbox, Grid, Dimmer, Dropdown, List, Loader, Table} from 'semantic-ui-react';
+import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input, Select} from 'semantic-ui-react';
 import Layout from '../Layout';
 import PaginationView, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
@@ -143,7 +143,9 @@ export default class Orders extends Component {
     tax: boolean,
     shippingCountries: ?Array<string>,
     orders: ?Array<Order>,
-    pagination: ?Pagination
+    pagination: ?Pagination,
+    searchScope: string,
+    search: ?string
   };
 
   constructor(props: Object) {
@@ -159,7 +161,9 @@ export default class Orders extends Component {
       tax: false,
       shippingCountries: null,
       orders: null,
-      pagination: null
+      pagination: null,
+      searchScope: 'email',
+      search: null
     };
   }
 
@@ -222,7 +226,31 @@ export default class Orders extends Component {
         exporter.downloadCsv(rows);
       })
       .catch((error) => this.setState({downloading: false, error}));
+  };
+
+  handleSearchInput = (e: SyntheticEvent, el: {value: ?string}) => {
+    this.setState({search: el.value ? el.value : null});
+  };
+
+  handleSearchScope = (e: SyntheticEvent, el: {value: ?string}) => {
+    this.setState({searchScope: el.value})
   }
+
+  search = (e: SyntheticEvent) => {
+    const {search, searchScope, filters} = this.state;
+    let newFilters = filters.slice();
+    let filtersToRemove = this.searchOptions.map(opt => opt.value)
+
+    if (search) {
+      if (!newFilters.includes(searchScope)) newFilters.push(searchScope)
+      filtersToRemove = filtersToRemove.filter(val => val !== searchScope)
+    }
+
+    // Remove any non-active search filters
+    newFilters = newFilters.filter(f => !filtersToRemove.some(ftr => f === ftr))
+
+    this.setState({filters: newFilters}, this.loadOrders);
+  };
 
   changePage(page: number) {
     let location = document.location.href;
@@ -270,9 +298,14 @@ export default class Orders extends Component {
       ));
   };
 
+  searchOptions = [
+    { key: 'email', text: 'Email', value: 'email' },
+    { key: 'items', text: 'Items', value: 'items' },
+  ]
+
   render() {
     const {onLink} = this.props;
-    const {loading, downloading, error, orders, pagination, tax, enabledFields} = this.state;
+    const {loading, downloading, error, orders, pagination, tax, enabledFields, searchScope} = this.state;
 
     return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
       <Dimmer.Dimmable dimmed={loading}>
@@ -281,10 +314,20 @@ export default class Orders extends Component {
             <Loader active={loading}>Loading orders...</Loader>
         </Dimmer>
 
-
+        <Input
+          action
+          type="search"
+          placeholder="Search..."
+          className="search-input search-padding"
+          onChange={this.handleSearchInput}>
+          <input />
+          <Select compact options={this.searchOptions} value={searchScope} onChange={this.handleSearchScope} />
+          <Button type='submit' onClick={this.search}>Search</Button>
+        </Input>
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
+
               <Button toggle active={tax} onClick={this.handleTax}>
                 Includes Tax
               </Button>
@@ -335,10 +378,16 @@ export default class Orders extends Component {
 }
 
 const OrdersFilters = {
-    tax() {
-      return true;
-    },
-    shipping_countries(state) {
-      return state.shippingCountries && state.shippingCountries.join(',');
-    }
-  };
+  tax() {
+    return true;
+  },
+  shipping_countries(state) {
+    return state.shippingCountries && state.shippingCountries.join(',');
+  },
+  email(state) {
+    return state.search
+  },
+  items(state) {
+    return state.search
+  }
+};

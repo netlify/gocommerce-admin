@@ -3,7 +3,7 @@ import type {User} from './Types';
 import React, {PropTypes, Component} from 'react';
 import director from 'director';
 import Auth from 'netlify-auth-js';
-import Commerce from 'netlify-commerce-js';
+import Commerce from 'gocommerce-js';
 import Sidebar from './Components/Sidebar';
 import {WithAuthentication, Customers, Discounts, Order, Orders, Reports} from './Components';
 import 'semantic-ui-css/semantic.css';

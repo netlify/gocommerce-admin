@@ -7,3 +7,11 @@
 .tr-clickable {
   cursor: pointer;
 }
+
+.search-input {
+  width: 100%;
+}
+
+.search-padding {
+  padding-bottom: 1rem;
+}

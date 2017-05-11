@@ -1,7 +1,7 @@
 // @flow
 import type {Commerce, Customer, Pagination} from '../../Types';
 import React, {PropTypes, Component} from 'react';
-import {Breadcrumb, Divider, Grid, Item, Segment} from 'semantic-ui-react';
+import {Breadcrumb, Divider, Grid, Item, Segment, Input, Button} from 'semantic-ui-react';
 import ErrorMessage from '../Messages/Error';
 import Gravatar from 'react-gravatar';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
@@ -16,7 +16,8 @@ export default class Customers extends Component {
     loading: boolean,
     error: ?Object,
     customers: ?Array<Customer>,
-    pagination: ?Pagination
+    pagination: ?Pagination,
+    search: ?string
   };
 
   constructor(props: props) {
@@ -25,12 +26,27 @@ export default class Customers extends Component {
       loading: true,
       error: null,
       customers: null,
-      pagination: null
+      page: 1,
+      pagination: null,
+      search: null
     };
   }
 
   componentDidMount() {
-    this.props.commerce.users({page: 1})
+    this.loadUsers()
+  }
+
+  handleSearchInput = (e: SyntheticEvent, el: {value: ?string}) => {
+    this.setState({search: el.value ? el.value : null});
+  };
+
+  search = (e: SyntheticEvent) => {
+    this.loadUsers()
+  };
+
+  loadUsers = () => {
+    this.setState({loading: true});
+    this.props.commerce.users(this.userQuery())
       .then(({users, pagination}) => {
         this.setState({loading: false, customers: users, pagination, error: null});
       })
@@ -38,7 +54,18 @@ export default class Customers extends Component {
         console.log("Error loading customers: %o", error);
         this.setState({loading: false, error});
       });
+  };
+
+  userQuery(page: ?number) {
+    const query: Object = {
+      page: page || this.state.page
+    };
+    if (this.state.search) {
+      query.email = UsersFilters.email(this.state)
+    }
+    return query;
   }
+
 
   render() {
     const {onLink} = this.props;
@@ -60,6 +87,10 @@ export default class Customers extends Component {
 
       <Divider/>
 
+      <Input action type="search" placeholder="Search..." className="search-input" onChange={this.handleSearchInput}>
+        <input />
+        <Button type='submit' onClick={this.search}>Search</Button>
+      </Input>
       <ErrorMessage error={error}/>
 
       <Segment loading={loading}>
@@ -79,3 +110,9 @@ export default class Customers extends Component {
     </div>;
   }
 }
+
+const UsersFilters = {
+  email(state) {
+    return state.search;
+  }
+};
