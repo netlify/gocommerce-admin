@@ -85,6 +85,7 @@ export type Address = {
 export type Commerce = {
   orderHistory: (Object) => Promise<{pagination: Pagination, orders: Array<Order>}>,
   orderDetails: (string) => Promise<Order>,
+  orderReceipt: (string, ?string) => Promise<{data: string}>,
   updateOrder: (string, Object) => Promise<Order>,
   users: (Object) => Promise<{pagination: Pagination, users: Array<Customer>}>,
   userDetails: (string) => Promise<Customer>,

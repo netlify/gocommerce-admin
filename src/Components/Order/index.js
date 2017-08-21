@@ -114,6 +114,20 @@ export default class OrderView extends Component {
     this.setState({newFullfilementState: el.value});
   };
 
+  handleReceipt = (e: SyntheticEvent) => {
+    e.preventDefault();
+    const {commerce} = this.props;
+    const {order} = this.state;
+    if (!order) { return; }
+
+    const openWindow = window.open("about:blank", "Receipt");
+
+    commerce.orderReceipt(order.id).then((data) => {
+      openWindow.document.body.innerHTML = data.data;
+    });
+
+  }
+
   render() {
     const {config, params, onLink} = this.props;
     const {customer, loading, error, order, newFullfilementState} = this.state;
@@ -243,7 +257,10 @@ export default class OrderView extends Component {
             <Segment>
               <Header as="h2">
                 Billing Status
-                <Header.Subheader>{order && order.payment_state}</Header.Subheader>
+                <Header.Subheader>
+                  {order && order.payment_state}
+                  {order && order.payment_state === 'paid' && <a href="#" onClick={this.handleReceipt}> receipt</a>}
+                </Header.Subheader>
               </Header>
 
               {order && <List divided>

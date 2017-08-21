@@ -12,7 +12,7 @@
     "csvexport": "^1.0.2",
     "date-fns": "^1.21.0",
     "director": "^1.2.8",
-    "gocommerce-js": "^3.6.1",
+    "gocommerce-js": "^3.9.0",
     "history": "^4.5.0",
     "jwt-decode": "^2.1.0",
     "money": "^0.2.0",
