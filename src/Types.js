@@ -44,6 +44,8 @@ export type Order = {
 
   transactions: Array<Transaction>,
 
+  selected: boolean,
+
   created_at: string,
   updated_at: string
 };

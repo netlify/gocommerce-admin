@@ -106,7 +106,8 @@ class OrderDetail extends Component {
   props: {
     order: Order,
     enabledFields: {[key: string]: boolean },
-    onLink: (any) => void
+    onLink: (any) => void,
+    onSelect: (string) => void
   };
 
   handleClick = (e: SyntheticEvent) => {
@@ -116,11 +117,19 @@ class OrderDetail extends Component {
     });
   };
 
+  handleToggle = (e: SyntheticEvent) => {
+    e.preventDefault();
+    this.props.onSelect(this.props.order.id);
+  };
+
   render() {
     const {order, enabledFields} = this.props;
 
-    return <Table.Row className="tr-clickable" onClick={this.handleClick}>
-      {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.Cell key={field}>
+    return <Table.Row className="tr-clickable">
+      <Table.Cell key="checkbox" onClick={this.handleToggle}>
+        <Checkbox onChange={this.handleToggle} checked={!!order.selected}/>
+      </Table.Cell>
+      {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.Cell key={field} onClick={this.handleClick}>
         {fields[field].fn ? fields[field].fn(order) : formatField(field, order)}
       </Table.Cell>)}
     </Table.Row>;
@@ -304,6 +313,11 @@ export default class Orders extends Component {
   }
 
   downloadAll(page: ?number) {
+    const selected = (this.state.orders || []).filter((order) => order.selected);
+    if (selected.length > 0) {
+      return Promise.resolve(selected);
+    }
+
     return this.props.commerce.orderHistory(this.orderQuery(page || 1))
       .then(({orders, pagination}) => (
         pagination.last === pagination.current ? orders : this.downloadAll(pagination.next).then(o => orders.concat(o))
@@ -314,6 +328,15 @@ export default class Orders extends Component {
     { key: 'email', text: 'Email', value: 'email' },
     { key: 'items', text: 'Items', value: 'items' },
   ]
+
+  handleSelect = (id: string) => {
+    this.setState((state) => ({orders: state.orders.map((order) => {
+      if (order.id === id) {
+        return {...order, selected: !order.selected};
+      }
+      return order;
+    })}));
+  }
 
   render() {
     const {onLink} = this.props;
@@ -374,6 +397,7 @@ export default class Orders extends Component {
         <Table celled striped selectable>
           <Table.Header>
             <Table.Row>
+              <Table.HeaderCell key="selector"></Table.HeaderCell>
               {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.HeaderCell key={field}>
                 {field}
               </Table.HeaderCell>)}
@@ -381,7 +405,7 @@ export default class Orders extends Component {
           </Table.Header>
           <Table.Body>
             {orders && orders.map((order) => (
-              <OrderDetail key={order.id} order={order} enabledFields={enabledFields} onLink={onLink}/>
+              <OrderDetail key={order.id} order={order} enabledFields={enabledFields} onLink={onLink} onSelect={this.handleSelect}/>
             ))}
           </Table.Body>
         </Table>
@@ -392,7 +416,7 @@ export default class Orders extends Component {
 }
 
 const OrdersFilters = {
-  tax() {
+  tax(state) {
     return true;
   },
   shipping_countries(state) {
