@@ -127,7 +127,7 @@ class OrderDetail extends Component {
 
     return <Table.Row className="tr-clickable">
       <Table.Cell key="checkbox" onClick={this.handleToggle}>
-        <Checkbox onChange={this.handleToggle} checked={!!order.selected}/>
+        <Checkbox checked={!!order.selected}/>
       </Table.Cell>
       {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.Cell key={field} onClick={this.handleClick}>
         {fields[field].fn ? fields[field].fn(order) : formatField(field, order)}
@@ -154,7 +154,8 @@ export default class Orders extends Component {
     orders: ?Array<Order>,
     pagination: ?Pagination,
     searchScope: 'email' | 'items',
-    search: ?string
+    search: ?string,
+    selection: boolean
   };
 
   constructor(props: Object) {
@@ -172,7 +173,8 @@ export default class Orders extends Component {
       orders: null,
       pagination: null,
       searchScope: 'email',
-      search: null
+      search: null,
+      selection: false
     };
   }
 
@@ -330,17 +332,37 @@ export default class Orders extends Component {
   ]
 
   handleSelect = (id: string) => {
-    this.setState((state) => ({orders: state.orders.map((order) => {
-      if (order.id === id) {
-        return {...order, selected: !order.selected};
-      }
-      return order;
-    })}));
+    this.setState((state) => {
+      let selection = false;
+
+      let orders = state.orders.map((order) => {
+        if (order.id === id) {
+          return {...order, selected: !order.selected};
+        }
+        if (order.selected) { selection = true; }
+        return order;
+      });
+
+      return {orders, selection};
+    });
+  }
+
+  handleReceipts = (e: SyntheticEvent) => {
+    e.preventDefault();
+
+    const {commerce} = this.props;
+    const {orders} = this.state;
+    const openWindow = window.open("about:blank", "Receipts");
+
+    Promise.all((orders || []).filter((o) => o.selected).map((order) => commerce.orderReceipt(order.id)))
+      .then((receipts) => {
+        openWindow.document.body.innerHTML = receipts.map((data) => data.data).join("<div class='page-break'></div>");
+      });
   }
 
   render() {
     const {onLink} = this.props;
-    const {loading, downloading, error, orders, pagination, tax, enabledFields, searchScope} = this.state;
+    const {loading, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
 
     return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
       <Dimmer.Dimmable dimmed={loading}>
@@ -389,6 +411,10 @@ export default class Orders extends Component {
 
                 <Button loading={downloading} onClick={this.handleDownload}>
                   Export CSV
+                </Button>
+
+                <Button onClick={this.handleReceipts} disabled={!selection}>
+                  Open Receipts
                 </Button>
             </Grid.Column>
           </Grid.Row>
