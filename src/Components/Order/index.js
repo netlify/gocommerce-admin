@@ -209,6 +209,9 @@ export default class OrderView extends Component {
                       Item
                     </Table.HeaderCell>
                     <Table.HeaderCell>
+                      Attributes
+                    </Table.HeaderCell>
+                    <Table.HeaderCell>
                       Type
                     </Table.HeaderCell>
                     <Table.HeaderCell>
@@ -231,6 +234,7 @@ export default class OrderView extends Component {
                           </Header.Subheader>
                         </Header>
                       </Table.Cell>
+                      <Table.Cell>{JSON.stringify(item.meta, null, 2)}</Table.Cell>
                       <Table.Cell>{item.type || null}</Table.Cell>
                       <Table.Cell>{item.quantity || null}</Table.Cell>
                       <Table.Cell>{formatPrice(item.price, order.currency)}</Table.Cell>

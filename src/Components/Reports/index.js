@@ -8,7 +8,7 @@ import Layout from '../Layout';
 import ErrorMessage from '../Messages/Error';
 import {formatPrice} from '../Order';
 
-const EXCHANGE_RATE_API = 'http://api.fixer.io/latest?base=USD';
+const EXCHANGE_RATE_API = 'https://api.fixer.io/latest?base=USD';
 
 type SalesRow = {
   subtotal: number,
