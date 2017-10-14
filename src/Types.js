@@ -3,7 +3,8 @@ export type Config = {
   siteURL: string,
   netlifyAuth: string,
   netlifySubs: string,
-  netlifyCommerce: string
+  netlifyCommerce: string,
+  receiptTemplate: string
 };
 
 export type Currency = 'USD' | 'EUR';

@@ -116,13 +116,13 @@ export default class OrderView extends Component {
 
   handleReceipt = (e: SyntheticEvent) => {
     e.preventDefault();
-    const {commerce} = this.props;
+    const {commerce, config} = this.props;
     const {order} = this.state;
     if (!order) { return; }
 
     const openWindow = window.open("about:blank", "Receipt");
-
-    commerce.orderReceipt(order.id).then((data) => {
+    console.log(config.receiptTemplate)
+    commerce.orderReceipt(order.id, config.receiptTemplate).then((data) => {
       openWindow.document.body.innerHTML = data.data;
     });
 

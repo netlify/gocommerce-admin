@@ -23,6 +23,10 @@ if (process.env.REACT_APP_NETLIFY_COMMERCE) {
   config.netlifyCommerce = process.env.REACT_APP_NETLIFY_COMMERCE;
 }
 
+if (process.env.REACT_APP_RECEIPT_TEMPLATE) {
+  config.receiptTemplate = process.env.REACT_APP_RECEIPT_TEMPLATE;
+}
+
 const auth = new Auth({APIUrl: config.netlifyAuth});
 const commerce = new Commerce({APIUrl: config.netlifyCommerce});
 
