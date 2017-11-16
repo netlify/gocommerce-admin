@@ -32,7 +32,7 @@ function formatAddress(field: 'shipping_address' | 'billing_address') {
     const addr: Address = order[field];
     if (csv) {
       return [
-        `${addr.first_name} ${addr.last_name}`,
+        addr.name,
         addr.company, addr.address1, addr.address2,
         addr.city, addr.zip, addr.state, addr.country
       ].filter(f => f).join(',');
