@@ -38,7 +38,7 @@ function formatAddress(field: 'shipping_address' | 'billing_address') {
       ].filter(f => f).join(',');
     }
     return addr && <div>
-      {addr.first_name} {addr.last_name}<br/>
+      {addr.name}<br/>
       {addr.company && <span>{addr.company}<br/></span>}
       {addr.address1}<br/>
       {addr.address2 && <span>{addr.address2}<br/></span>}
