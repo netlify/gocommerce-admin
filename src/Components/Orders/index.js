@@ -1,5 +1,6 @@
 // @flow
 import type {Commerce, Pagination, Order, Address} from '../../Types';
+import _ from 'lodash';
 import React, {Component} from 'react';
 import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input, Select} from 'semantic-ui-react';
 import Layout from '../Layout';
@@ -27,15 +28,13 @@ function formatLineItems(order: Order, csv: boolean) {
 </span>)
 }
 
+const addressFields = ['name', 'company', 'address1', 'address2', 'city', 'zip', 'state', 'country'];
+
 function formatAddress(field: 'shipping_address' | 'billing_address') {
   return (order: Order, csv: boolean) => {
     const addr: Address = order[field];
     if (csv) {
-      return [
-        addr.name,
-        addr.company, addr.address1, addr.address2,
-        addr.city, addr.zip, addr.state, addr.country
-      ].filter(f => f).join(',');
+      return addr;
     }
     return addr && <div>
       {addr.name}<br/>
@@ -226,10 +225,27 @@ export default class Orders extends Component {
         this.setState({downloading: false});
         const {enabledFields} = this.state;
         const rows = orders.map((order) => {
+          console.log('Rows for orders ', order.id)
           const formattedOrder = {};
+          const headers = _.flatten(Object.keys(enabledFields).map((field) => {
+            const match = field.match(/(\S+) Address$/);
+            if (match) {
+              return addressFields.map((field) => `${match[1]} ${field}`);
+            }
+            return field;
+          }))
           Object.keys(enabledFields).forEach((field) => {
             if (enabledFields[field]) {
-              formattedOrder[field] = fields[field].fn ? fields[field].fn(order, true) : formatField(field, order);
+              const match = field.match(/(\S+) Address$/);
+              if (match) {
+                const addr = formatField(field, order);
+                console.log(addr, field, order)
+                addressFields.forEach((field) => {
+                  formattedOrder[`${match[1]} ${field}`] = addr[field];
+                })
+              } else {
+                formattedOrder[field] = fields[field].fn ? fields[field].fn(order, true) : formatField(field, order);
+              }
             }
           });
           return formattedOrder;

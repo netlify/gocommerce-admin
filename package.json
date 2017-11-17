@@ -15,6 +15,7 @@
     "gocommerce-js": "^3.9.0",
     "history": "^4.5.0",
     "jwt-decode": "^2.1.0",
+    "lodash": "^4.17.4",
     "money": "^0.2.0",
     "netlify-auth-js": "^0.5.2",
     "react": "^15.4.1",
