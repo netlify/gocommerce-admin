@@ -15,6 +15,10 @@ import './Orders.css';
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
 const PER_PAGE = 50;
 
+// needed for cmd click functionality
+let isCtrlKeyDown = false
+const isCtrlKey = e => (e.key === 'Meta' || e.key === 'Control' || e.metaKey || e.ctrlKey) 
+
 function formatField(label: string, order: Order) {
   return order[label.toLowerCase().replace(/ /, '_')];
 }
@@ -110,6 +114,10 @@ class OrderDetail extends Component {
   };
 
   handleClick = (e: SyntheticEvent) => {
+    if (isCtrlKeyDown) {
+      return window.open(`/orders/${this.props.order.id}`, '_blank')
+    }
+    
     this.props.onLink({
       preventDefault: e.preventDefault,
       target: {getAttribute: (a) => ({href: `/orders/${this.props.order.id}`}[a])}
@@ -125,12 +133,18 @@ class OrderDetail extends Component {
     const {order, enabledFields} = this.props;
 
     return <Table.Row className="tr-clickable">
-      <Table.Cell key="checkbox" onClick={this.handleToggle}>
-        <Checkbox checked={!!order.selected}/>
-      </Table.Cell>
-      {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.Cell key={field} onClick={this.handleClick}>
-        {fields[field].fn ? fields[field].fn(order) : formatField(field, order)}
-      </Table.Cell>)}
+        <Table.Cell key="checkbox" onClick={this.handleToggle}>
+          <Checkbox checked={!!order.selected}/>
+        </Table.Cell>
+        {Object.keys(enabledFields).map(field => {
+          const tdData = fields[field].fn ? fields[field].fn(order) : formatField(field, order)
+          
+          return enabledFields[field] && (
+            <Table.Cell key={field} onClick={this.handleClick}>
+              {field === 'Items' ? <a href={`/orders/${order.id}`} onClick={e => e.preventDefault()}>{tdData}</a> : tdData}
+            </Table.Cell>
+          )
+        })}
     </Table.Row>;
   }
 }
@@ -179,6 +193,8 @@ export default class Orders extends Component {
 
   componentDidMount() {
     this.loadOrders();
+    document.addEventListener('keydown', e => isCtrlKey(e) && (isCtrlKeyDown = true))
+    document.addEventListener('keyup', e => isCtrlKey(e) && (isCtrlKeyDown = false))
   }
 
   handleToggleField = (e: SyntheticEvent, el: {name: string}) => {
