@@ -32,6 +32,14 @@ function formatLineItems(order: Order, csv: boolean) {
 </span>)
 }
 
+function formatLineItemTypes(order: Order, csv: boolean) {
+  let types = [];
+
+  (order.line_items || []).map(item => !types.includes(item.type) && types.push(item.type))
+
+  return types.map(t => <div key={t}>{t}</div>)
+}
+
 const addressFields = ['name', 'company', 'address1', 'address2', 'city', 'zip', 'state', 'country'];
 
 function formatAddress(field: 'shipping_address' | 'billing_address') {
@@ -75,6 +83,7 @@ const fields = {
   ID: {},
   Email: {sort: "email"},
   Items: {fn: formatLineItems},
+  Type: {fn: formatLineItemTypes},
   "Shipping Address": {fn: formatAddress("shipping_address")},
   "Shipping Country": {fn: (order) => order.shipping_address.country},
   "Billing Address": {fn: formatAddress("billing_address")},
@@ -91,6 +100,7 @@ const fields = {
 const enabledFields = {
   ID: false,
   Items: true,
+  Type: true,
   Email: true,
   "Shipping Address": false,
   "Shipping Country": false,
