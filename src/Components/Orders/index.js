@@ -17,7 +17,7 @@ const PER_PAGE = 50;
 
 // needed for cmd click functionality
 let isCtrlKeyDown = false
-const isCtrlKey = e => (e.key === 'Meta' || e.key === 'Control' || e.metaKey || e.ctrlKey) 
+const isCtrlKey = e => (e.key === 'Meta' || e.key === 'Control' || e.metaKey || e.ctrlKey)
 
 function formatField(label: string, order: Order) {
   return order[label.toLowerCase().replace(/ /, '_')];
@@ -117,7 +117,7 @@ class OrderDetail extends Component {
     if (isCtrlKeyDown) {
       return window.open(`/orders/${this.props.order.id}`, '_blank')
     }
-    
+
     this.props.onLink({
       preventDefault: e.preventDefault,
       target: {getAttribute: (a) => ({href: `/orders/${this.props.order.id}`}[a])}
@@ -138,7 +138,7 @@ class OrderDetail extends Component {
         </Table.Cell>
         {Object.keys(enabledFields).map(field => {
           const tdData = fields[field].fn ? fields[field].fn(order) : formatField(field, order)
-          
+
           return enabledFields[field] && (
             <Table.Cell key={field} onClick={this.handleClick}>
               {field === 'Items' ? <a href={`/orders/${order.id}`} onClick={e => e.preventDefault()}>{tdData}</a> : tdData}
@@ -369,14 +369,25 @@ export default class Orders extends Component {
 
       let orders = state.orders.map((order) => {
         if (order.id === id) {
-          return {...order, selected: !order.selected};
+          order = {...order, selected: !order.selected};
         }
-        if (order.selected) { selection = true; }
-        return order;
+        if (order.selected) selection = true
+        return order
       });
 
       return {orders, selection};
     });
+  }
+
+  handleToggleAll = e => {
+    e.preventDefault()
+    const selection = !this.state.allSelected
+
+    this.setState({
+      allSelected: selection,
+      selection,
+      orders: this.state.orders.map(o => ({ ...o, selected: selection }))
+    })
   }
 
   handleReceipts = (e: SyntheticEvent) => {
@@ -386,7 +397,7 @@ export default class Orders extends Component {
     const {orders} = this.state;
     const openWindow = window.open("about:blank", "Receipts");
 
-    Promise.all((orders || []).filter((o) => o.selected).map((order) => commerce.orderReceipt(order.id)))
+    Promise.all((orders || []).filter((o) => o.selected && o.payment_state === 'paid').map((order) => commerce.orderReceipt(order.id)))
       .then((receipts) => {
         openWindow.document.body.innerHTML = receipts.map((data) => data.data).join("<div class='page-break'></div>");
       });
@@ -394,7 +405,7 @@ export default class Orders extends Component {
 
   render() {
     const {onLink} = this.props;
-    const {loading, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
+    const {loading, allSelected, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
 
     return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
       <Dimmer.Dimmable dimmed={loading}>
@@ -455,7 +466,9 @@ export default class Orders extends Component {
         <Table celled striped selectable>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell key="selector"></Table.HeaderCell>
+              <Table.HeaderCell key="selector" onClick={this.handleToggleAll}>
+                <Checkbox checked={!!allSelected} />
+              </Table.HeaderCell>
               {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.HeaderCell key={field}>
                 {field}
               </Table.HeaderCell>)}
