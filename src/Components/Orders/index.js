@@ -15,6 +15,10 @@ import './Orders.css';
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
 const PER_PAGE = 50;
 
+// needed for cmd click functionality
+let isCtrlKeyDown = false
+const isCtrlKey = e => (e.key === 'Meta' || e.key === 'Control' || e.metaKey || e.ctrlKey)
+
 function formatField(label: string, order: Order) {
   return order[label.toLowerCase().replace(/ /, '_')];
 }
@@ -26,6 +30,14 @@ function formatLineItems(order: Order, csv: boolean) {
   return order.line_items && order.line_items.map((item) => <span key={item.id}>
     {item.quantity} x “{item.title}” <br/>
 </span>)
+}
+
+function formatLineItemTypes(order: Order, csv: boolean) {
+  let types = [];
+
+  (order.line_items || []).map(item => !types.includes(item.type) && types.push(item.type))
+
+  return types.map(t => <div key={t}>{t}</div>)
 }
 
 const addressFields = ['name', 'company', 'address1', 'address2', 'city', 'zip', 'state', 'country'];
@@ -71,6 +83,7 @@ const fields = {
   ID: {},
   Email: {sort: "email"},
   Items: {fn: formatLineItems},
+  Type: {fn: formatLineItemTypes},
   "Shipping Address": {fn: formatAddress("shipping_address")},
   "Shipping Country": {fn: (order) => order.shipping_address.country},
   "Billing Address": {fn: formatAddress("billing_address")},
@@ -87,6 +100,7 @@ const fields = {
 const enabledFields = {
   ID: false,
   Items: true,
+  Type: true,
   Email: true,
   "Shipping Address": false,
   "Shipping Country": false,
@@ -110,6 +124,10 @@ class OrderDetail extends Component {
   };
 
   handleClick = (e: SyntheticEvent) => {
+    if (isCtrlKeyDown) {
+      return window.open(`/orders/${this.props.order.id}`, '_blank')
+    }
+
     this.props.onLink({
       preventDefault: e.preventDefault,
       target: {getAttribute: (a) => ({href: `/orders/${this.props.order.id}`}[a])}
@@ -125,12 +143,18 @@ class OrderDetail extends Component {
     const {order, enabledFields} = this.props;
 
     return <Table.Row className="tr-clickable">
-      <Table.Cell key="checkbox" onClick={this.handleToggle}>
-        <Checkbox checked={!!order.selected}/>
-      </Table.Cell>
-      {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.Cell key={field} onClick={this.handleClick}>
-        {fields[field].fn ? fields[field].fn(order) : formatField(field, order)}
-      </Table.Cell>)}
+        <Table.Cell key="checkbox" onClick={this.handleToggle}>
+          <Checkbox checked={!!order.selected}/>
+        </Table.Cell>
+        {Object.keys(enabledFields).map(field => {
+          const tdData = fields[field].fn ? fields[field].fn(order) : formatField(field, order)
+
+          return enabledFields[field] && (
+            <Table.Cell key={field} onClick={this.handleClick}>
+              {field === 'Items' ? <a href={`/orders/${order.id}`} onClick={e => e.preventDefault()}>{tdData}</a> : tdData}
+            </Table.Cell>
+          )
+        })}
     </Table.Row>;
   }
 }
@@ -179,6 +203,8 @@ export default class Orders extends Component {
 
   componentDidMount() {
     this.loadOrders();
+    document.addEventListener('keydown', e => isCtrlKey(e) && (isCtrlKeyDown = true))
+    document.addEventListener('keyup', e => isCtrlKey(e) && (isCtrlKeyDown = false))
   }
 
   handleToggleField = (e: SyntheticEvent, el: {name: string}) => {
@@ -353,14 +379,25 @@ export default class Orders extends Component {
 
       let orders = state.orders.map((order) => {
         if (order.id === id) {
-          return {...order, selected: !order.selected};
+          order = {...order, selected: !order.selected};
         }
-        if (order.selected) { selection = true; }
-        return order;
+        if (order.selected) selection = true
+        return order
       });
 
       return {orders, selection};
     });
+  }
+
+  handleToggleAll = e => {
+    e.preventDefault()
+    const selection = !this.state.allSelected
+
+    this.setState({
+      allSelected: selection,
+      selection,
+      orders: this.state.orders.map(o => ({ ...o, selected: selection }))
+    })
   }
 
   handleReceipts = (e: SyntheticEvent) => {
@@ -370,7 +407,7 @@ export default class Orders extends Component {
     const {orders} = this.state;
     const openWindow = window.open("about:blank", "Receipts");
 
-    Promise.all((orders || []).filter((o) => o.selected).map((order) => commerce.orderReceipt(order.id)))
+    Promise.all((orders || []).filter((o) => o.selected && o.payment_state === 'paid').map((order) => commerce.orderReceipt(order.id)))
       .then((receipts) => {
         openWindow.document.body.innerHTML = receipts.map((data) => data.data).join("<div class='page-break'></div>");
       });
@@ -378,7 +415,7 @@ export default class Orders extends Component {
 
   render() {
     const {onLink} = this.props;
-    const {loading, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
+    const {loading, allSelected, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
 
     return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
       <Dimmer.Dimmable dimmed={loading}>
@@ -439,7 +476,9 @@ export default class Orders extends Component {
         <Table celled striped selectable>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell key="selector"></Table.HeaderCell>
+              <Table.HeaderCell key="selector" onClick={this.handleToggleAll}>
+                <Checkbox checked={!!allSelected} />
+              </Table.HeaderCell>
               {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.HeaderCell key={field}>
                 {field}
               </Table.HeaderCell>)}
