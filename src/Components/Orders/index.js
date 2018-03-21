@@ -38,7 +38,7 @@ function formatLineItemTypes(order: Order, csv: boolean) {
   (order.line_items || []).map(item => !types.includes(item.type) && types.push(item.type))
 
   if (csv) {
-    return types.map(t => `${t}, `).replace(/,\s*$/, '')
+    return types.map(t => `${t}`).join(', ').replace(/,\s*$/, '')
   }
 
   return types.map(t => <div key={t}>{t}</div>)
