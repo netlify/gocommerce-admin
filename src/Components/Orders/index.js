@@ -34,6 +34,11 @@ function formatLineItems(order: Order, csv: boolean) {
 </span>)
 }
 
+function formatName(order: Order, csv: boolean) {
+
+  return _.get(order, 'billing_address.name') || _.get(order, 'shipping_address.name')
+}
+
 function formatLineItemTypes(order: Order, csv: boolean) {
   let types = [];
 
@@ -89,6 +94,7 @@ const fields = {
   ID: {},
   Email: {sort: "email"},
   Items: {fn: formatLineItems},
+  Name: {fn: formatName},
   Type: {fn: formatLineItemTypes},
   "Shipping Address": {fn: formatAddress("shipping_address")},
   "Shipping Country": {fn: (order) => order.shipping_address.country},
@@ -107,6 +113,7 @@ const enabledFields = {
   ID: false,
   Items: true,
   Type: true,
+  Name: true,
   Email: true,
   "Shipping Address": false,
   "Shipping Country": false,
@@ -147,7 +154,7 @@ class OrderDetail extends Component {
 
   render() {
     const {order, enabledFields} = this.props;
-
+    console.log(order)
     return <Table.Row className="tr-clickable">
         <Table.Cell key="checkbox" onClick={this.handleToggle}>
           <Checkbox checked={!!order.selected}/>
@@ -196,7 +203,7 @@ export default class Orders extends Component {
       error: null,
       filters: [],
       page: pageFromURL(),
-      enabledFields: storedFields ? JSON.parse(storedFields) : Object.assign({}, enabledFields),
+      enabledFields: Object.assign({}, enabledFields, storedFields ? JSON.parse(storedFields) : {}),
       tax: false,
       shippingCountries: null,
       orders: null,
