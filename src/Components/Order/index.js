@@ -9,6 +9,8 @@ import Address from './Address';
 import AddressEditor from './AddressEditor';
 import './styles.css';
 
+import { requiresShipping } from '../../helpers'
+
 function formatId(id: string) {
   return id.split("-").pop();
 }
@@ -178,14 +180,17 @@ export default class OrderView extends Component {
                     />
                   </Grid.Column>
 
-                  <Grid.Column>
-                    <Address
-                        title="Shipping Details"
-                        address={order && order.shipping_address}
-                        href={`/orders/${params.id}/shipping_address`}
-                        onLink={onLink}
-                    />
-                  </Grid.Column>
+
+                    <Grid.Column>
+                      {requiresShipping(order) && (
+                        <Address
+                          title="Shipping Details"
+                          address={order && order.shipping_address}
+                          href={`/orders/${params.id}/shipping_address`}
+                          onLink={onLink}
+                        />
+                      )}
+                    </Grid.Column>
 
                 </Grid.Row>
               </Grid>}
@@ -282,23 +287,26 @@ export default class OrderView extends Component {
               </List>}
             </Segment>
 
-            <Segment>
-              <Header as="h2">
-                Shipping Status
-                <Header.Subheader>Shipping to {order && order.shipping_address && order.shipping_address.country}</Header.Subheader>
-              </Header>
+            {requiresShipping(order) && (
+              <Segment>
+                <Header as="h2">
+                  Shipping Status
+                  <Header.Subheader>Shipping to {order && order.shipping_address && order.shipping_address.country}</Header.Subheader>
+                </Header>
 
-              <Form onSubmit={this.handleShippingUpdate}>
-                <Form.Group>
-                  <Form.Select
-                    options={[{value: "pending", text: "Pending"}, {value: "shipped", text: "shipped"}]}
-                    value={newFullfilementState ? newFullfilementState : order && order.fulfillment_state}
-                    onChange={this.handleChangeShippingState}
-                  />
-                </Form.Group>
-                {order && newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
-              </Form>
-            </Segment>
+                <Form onSubmit={this.handleShippingUpdate}>
+                  <Form.Group>
+                    <Form.Select
+                      options={[{value: "pending", text: "Pending"}, {value: "shipped", text: "shipped"}]}
+                      value={newFullfilementState ? newFullfilementState : order && order.fulfillment_state}
+                      onChange={this.handleChangeShippingState}
+                    />
+                  </Form.Group>
+                  {order && newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
+                </Form>
+              </Segment>
+            )}
+
           </Grid.Column>
         </Grid.Row>
       </Grid>

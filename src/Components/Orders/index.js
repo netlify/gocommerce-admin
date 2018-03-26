@@ -11,6 +11,8 @@ import countries from '../../data/countries.json';
 import 'csvexport/dist/Export.min';
 import './Orders.css';
 
+import { requiresShipping } from '../../helpers'
+
 
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
 const PER_PAGE = 50;
@@ -94,7 +96,7 @@ const fields = {
   "Billing Country": {fn: (order) => order.billing_address.country},
   Taxes: {sort: "taxes", fn: formatPriceField("taxes")},
   Subtotal: {sort: "subtotal", fn: formatPriceField("subtotal")},
-  "Shipping State": {fn: (order) => order.fulfillment_state},
+  "Shipping State": {fn: (order) => requiresShipping(order) ? order.fulfillment_state : null},
   "Payment State": {},
   Total: {sort: "total", fn: formatPriceField("total")},
   "Created At": {sort: "created_at", fn: formatDateField("created_at")},
