@@ -2,7 +2,7 @@
 import type {Commerce, Pagination, Order, Address} from '../../Types';
 import _ from 'lodash';
 import React, {Component} from 'react';
-import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input, Select} from 'semantic-ui-react';
+import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Icon, Header, Input, Select, Modal} from 'semantic-ui-react';
 import Layout from '../Layout';
 import PaginationView, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
@@ -10,8 +10,10 @@ import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import countries from '../../data/countries.json';
 import 'csvexport/dist/Export.min';
 import './Orders.css';
+import { defaultRanges, Calendar, DateRange } from 'react-date-range'
+import moment from 'moment'
 
-import { requiresShipping } from '../../helpers'
+import { requiresShipping, formatDateInterval } from '../../helpers'
 
 
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
@@ -154,7 +156,6 @@ class OrderDetail extends Component {
 
   render() {
     const {order, enabledFields} = this.props;
-    console.log(order)
     return <Table.Row className="tr-clickable">
         <Table.Cell key="checkbox" onClick={this.handleToggle}>
           <Checkbox checked={!!order.selected}/>
@@ -358,7 +359,8 @@ export default class Orders extends Component {
   }
 
   orderQuery(page: ?number) {
-    const query: Object = {
+    const { startDate, endDate } = this.state
+    let query: Object = {
       user_id: "all",
       per_page: PER_PAGE,
       page: page || this.state.page
@@ -366,6 +368,12 @@ export default class Orders extends Component {
     this.state.filters.forEach((filter) => {
       query[filter] = OrdersFilters[filter](this.state);
     });
+
+    if (startDate && endDate) {
+      query.from = startDate.unix()
+      query.to = endDate.unix()
+    }
+
     return query;
   }
 
@@ -426,11 +434,46 @@ export default class Orders extends Component {
       });
   }
 
+  handleDatePicker = (isReset, isApply) => this.setState({
+    openDatePicker: !this.state.openDatePicker,
+    startDate: !isReset ? this.state.startDate : null,
+    endDate: !isReset ? this.state.endDate : null,
+  }, () => (isReset || isApply) && this.loadOrders())
+
   render() {
     const {onLink} = this.props;
-    const {loading, allSelected, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
+    const {loading, startDate, endDate, allSelected, openDatePicker, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
+    const interval = formatDateInterval(startDate, endDate)
+
 
     return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
+      <Modal open={openDatePicker}>
+        <Header icon='calendar' content='Select a date range' />
+        <Modal.Content>
+          <DateRange
+            linkedCalendars={ true }
+            ranges={ defaultRanges }
+            startDate={(startDate || moment()).format('DD/MM/YYYY')}
+            endDate={(endDate || moment()).format('DD/MM/YYYY')}
+            onInit={ ({ startDate, endDate }) => this.setState({ startDate, endDate })}
+            onChange={ ({ startDate, endDate }) => this.setState({ startDate, endDate })}
+            theme={{
+              DateRange: { width: 850 },
+              Calendar : { width: 350 },
+              PredefinedRanges : { marginLeft: 10, marginTop: 10 }
+            }}
+          />
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => this.handleDatePicker(1)}>
+            <Icon name='remove' /> Reset
+          </Button>
+          <Button color='green' inverted onClick={() => this.handleDatePicker(0, 1)}>
+            <Icon name='checkmark' /> Apply
+          </Button>
+        </Modal.Actions>
+      </Modal>
+
       <Dimmer.Dimmable dimmed={loading}>
         <ErrorMessage error={error}/>
         <Dimmer active={loading}>
@@ -452,6 +495,12 @@ export default class Orders extends Component {
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
+
+              <Button primary={!!interval} loading={downloading} onClick={() => this.handleDatePicker()}>
+                {interval || 'All time'}
+              </Button>
+
+
 
               <Button toggle active={tax} onClick={this.handleTax}>
                 Includes Tax
