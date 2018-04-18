@@ -121,7 +121,7 @@ const enabledFields = {
   "Shipping Country": false,
   "Billing Address": false,
   "Billing Country": false,
-  "Shipping State": true,
+  //"Shipping State": false,
   "Payment State": true,
   Taxes: false,
   Subtotal: false,

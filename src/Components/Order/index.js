@@ -267,8 +267,8 @@ export default class OrderView extends Component {
               <Header as="h2">
                 Billing Status
                 <Header.Subheader>
-                  {order && order.payment_state}
-                  {order && order.payment_state === 'paid' && <a href="#" onClick={this.handleReceipt}> receipt</a>}
+                  <b>{order && order.payment_state.toUpperCase()}</b>
+                  {order && order.payment_state === 'paid' && <p><a href="#" onClick={this.handleReceipt}>Show receipt</a></p>}
                 </Header.Subheader>
               </Header>
 
@@ -287,7 +287,7 @@ export default class OrderView extends Component {
               </List>}
             </Segment>
 
-            {requiresShipping(order) && (
+            {false && requiresShipping(order) && (
               <Segment>
                 <Header as="h2">
                   Shipping Status
