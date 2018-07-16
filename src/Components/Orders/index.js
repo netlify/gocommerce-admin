@@ -281,6 +281,7 @@ export default class Orders extends Component {
                 const addr = formatField(field, order);
                 console.log(addr, field, order)
                 addressFields.forEach((field) => {
+                  if (field === 'zip') addr[field] = `="${addr[field]}"`
                   formattedOrder[`${match[1]} ${field}`] = addr[field];
                 })
               } else {
@@ -344,7 +345,7 @@ export default class Orders extends Component {
 
   loadOrders = () => {
     this.setState({loading: true});
-    this.props.commerce.orderHistory(this.orderQuery())
+    this.props.commerce.orderHistory(Object.assign({ payment_state: 'paid' }, this.orderQuery()))
       .then((response) => {
         const {orders, pagination} = response;
         if (pagination.last < this.state.page && this.state.page !== 1) {
