@@ -281,8 +281,7 @@ export default class Orders extends Component {
                 const addr = formatField(field, order);
                 console.log(addr, field, order)
                 addressFields.forEach((field) => {
-                  if (field === 'zip') addr[field] = `="${addr[field]}"`
-                  formattedOrder[`${match[1]} ${field}`] = addr[field];
+                  formattedOrder[`${match[1]} ${field}`] = (field === 'zip') ? `="${addr[field]}"` : addr[field];
                 })
               } else {
                 formattedOrder[field] = fields[field].fn ? fields[field].fn(order, true) : formatField(field, order);
