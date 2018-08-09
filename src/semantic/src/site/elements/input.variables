@@ -1,0 +1,31 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+
+
+/*-------------------
+      Element
+--------------------*/
+
+@inputFont: @pageFont;
+@verticalPadding: @inputVerticalPadding;
+@horizontalPadding: @inputHorizontalPadding;
+
+@lineHeight: @inputLineHeight;
+@lineHeightOffset: ((@lineHeight - 1em) / 2);
+
+@padding: (@verticalPadding - @lineHeightOffset) @horizontalPadding;
+
+@textAlign: left;
+@background: @inputBackground;
+@borderWidth: 1px;
+@border: solid;
+@boxShadow: @subtleShadow;
+
+
+/* Focus */
+@focusBorderColor: @focusedFormBorderColor;
+@focusBackground: @background;
+@focusColor: @hoveredTextColor;
+@focusBoxShadow: @subtleShadow;
+

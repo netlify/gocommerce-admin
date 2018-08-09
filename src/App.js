@@ -7,6 +7,7 @@ import Commerce from 'gocommerce-js';
 import Sidebar from './Components/Sidebar';
 import {WithAuthentication, Customers, Discounts, Order, Orders, Reports} from './Components';
 import 'semantic-ui-css/semantic.css';
+import './semantic/dist/semantic.min.css';
 import './App.css';
 import config from './config/default.json';
 
