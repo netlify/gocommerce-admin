@@ -13,8 +13,10 @@ export default class LoginForm extends Component {
   render() {
     const {loading, error} = this.props;
 
-    return <Grid textAlign='center' style={{ height: '100%' }} verticalAlign='middle'>
-        <Grid.Column style={{ maxWidth: "330px" }}>
+    return <Grid textAlign='center' style={{
+        backgroundImage: 'linear-gradient(to bottom, #ffffff, #e9edf2)'
+      }} verticalAlign='middle'>
+        <Grid.Column style={{ marginTop : "140px", maxWidth: "330px" }}>
           <Header size='medium' color="blue" textAlign='center'>Sign In to GoCommerce</Header>
           <Form error={!!error} onSubmit={this.handleSubmit}>
             <Form.Input placeholder="Email" name="email" type="email" />

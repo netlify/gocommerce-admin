@@ -24,7 +24,7 @@ export default class WithAuthentication extends Component {
   render() {
     const {user, children} = this.props;
     const {loading, error} = this.state;
-    return <div style={{height: '100%'}}>
+    return <div>
       {!user && <LoginForm loading={loading} error={error} onLogin={this.handleLogin}/>}
       {user && children}
     </div>;
