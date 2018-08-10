@@ -15,3 +15,7 @@
 .search-padding {
   padding-bottom: 1rem;
 }
+
+#root {
+  height: 100%;
+}

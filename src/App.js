@@ -115,6 +115,7 @@ class App extends Component {
     const component = MainComponent[route] || null;
 
     return (<div className="App">
+    return (<div className="App" style={{height: '100%'}}>
       <WithAuthentication user={user} onLogin={this.handleLogin}>
         <Sidebar
           active={active}

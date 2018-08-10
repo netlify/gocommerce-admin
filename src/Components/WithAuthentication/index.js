@@ -17,15 +17,15 @@ export default class WithAuthentication extends Component {
         this.setState({loading: false, error: null});
       })
       .catch((error) => {
-        this.setState({loading: false, error: (error.description || error.msg || error.toString())});
+        this.setState({loading: false, error: (error.description || error.msg || error.error_description || error.toString())});
       });
   };
 
   render() {
     const {user, children} = this.props;
     const {loading, error} = this.state;
-    return <div>
-      {<LoginForm show={!user} loading={loading} error={error} onLogin={this.handleLogin}/>}
+    return <div style={{height: '100%'}}>
+      {!user && <LoginForm loading={loading} error={error} onLogin={this.handleLogin}/>}
       {user && children}
     </div>;
   }
