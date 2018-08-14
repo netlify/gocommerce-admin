@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import LoginForm from './LoginForm';
+import React, { Component } from "react";
+import LoginForm from "./LoginForm";
 
 export default class WithAuthentication extends Component {
   constructor(props) {
@@ -11,22 +11,38 @@ export default class WithAuthentication extends Component {
   }
 
   handleLogin = (email, password) => {
-    this.setState({loading: true});
-    this.props.onLogin(email, password)
+    this.setState({ loading: true });
+    this.props
+      .onLogin(email, password)
       .then(() => {
-        this.setState({loading: false, error: null});
+        this.setState({ loading: false, error: null });
       })
-      .catch((error) => {
-        this.setState({loading: false, error: (error.description || error.msg || error.error_description || error.toString())});
+      .catch(error => {
+        this.setState({
+          loading: false,
+          error:
+            error.description ||
+            error.msg ||
+            error.error_description ||
+            error.toString()
+        });
       });
   };
 
   render() {
-    const {user, children} = this.props;
-    const {loading, error} = this.state;
-    return <div>
-      {!user && <LoginForm loading={loading} error={error} onLogin={this.handleLogin}/>}
-      {user && children}
-    </div>;
+    const { user, children } = this.props;
+    const { loading, error } = this.state;
+    return (
+      <div>
+        {!user && (
+          <LoginForm
+            loading={loading}
+            error={error}
+            onLogin={this.handleLogin}
+          />
+        )}
+        {user && children}
+      </div>
+    );
   }
 }
