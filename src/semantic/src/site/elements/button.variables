@@ -1,0 +1,32 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+
+@submitPrimary: @blue;
+@medium: auto;
+@fontWeight: normal;
+
+
+ @coloredBackgroundImage: linear-gradient(to bottom, #2872ee, #0b50c3);
+ 
+/* Ordinality */
+@primaryBackgroundImage: @coloredBackgroundImage;
+@secondaryBackgroundImage: @coloredBackgroundImage;
+
+/*-------------------
+        States
+--------------------*/
+
+/* Hovered */
+@hoverBackgroundColor: #D1D4D9;
+@hoverBackgroundImage: @backgroundImage;
+@hoverBoxShadow: @boxShadow;
+@hoverColor: @hoveredTextColor;
+@iconHoverOpacity: 0.85;
+
+/* Focused */
+@focusBackgroundColor: @hoverBackgroundColor;
+@focusBackgroundImage: '';
+@focusBoxShadow: '';
+@focusColor: @hoveredTextColor;
+@iconFocusOpacity: 0.85;

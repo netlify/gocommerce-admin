@@ -13,6 +13,7 @@
     "date-fns": "^1.21.0",
     "director": "^1.2.8",
     "gocommerce-js": "^3.9.0",
+    "gulp": "^3.9.1",
     "history": "^4.5.0",
     "jwt-decode": "^2.1.0",
     "lodash": "^4.17.4",
@@ -21,16 +22,17 @@
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-gravatar": "^2.6.1",
-    "semantic-ui-css": "^2.2.4",
+    "semantic-ui": "^2.2.6",
     "semantic-ui-react": "^0.62.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build:css": "cd src/semantic && gulp build",
+    "start": "yarn build:css && react-scripts start",
+    "build": "yarn build:css && react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "lint": "npm run lint:js",
+    "lint": "yarn lint:js",
     "lint:js": "eslint .",
-    "lint:js:fix": "npm run lint:js -- --fix",
+    "lint:js:fix": "yarn lint:js -- --fix",
     "eject": "react-scripts eject",
     "flow": "flow"
   }
