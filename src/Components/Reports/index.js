@@ -2,7 +2,7 @@
 import type {Config, Commerce, Currency} from '../../Types';
 import React, {Component} from 'react';
 import addWeeks from 'date-fns/add_weeks';
-import {Table} from 'semantic-ui-react';
+import {Header,Table} from 'semantic-ui-react';
 import fx from 'money';
 import Layout from '../Layout';
 import ErrorMessage from '../Messages/Error';

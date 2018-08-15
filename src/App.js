@@ -4,8 +4,7 @@ import React, {PropTypes, Component} from 'react';
 import director from 'director';
 import Auth from 'netlify-auth-js';
 import Commerce from 'gocommerce-js';
-import Sidebar from './Components/Sidebar';
-import {WithAuthentication, Customers, Discounts, Order, Orders, Reports} from './Components';
+import {WithAuthentication, Navigation, Customers, Discounts, Order, Orders, Reports} from './Components';
 import './semantic/dist/semantic.min.css';
 import './App.css';
 import config from './config/default.json';
@@ -116,7 +115,7 @@ class App extends Component {
 
     return (<div className="App">
       <WithAuthentication user={user} onLogin={this.handleLogin}>
-        <Sidebar
+        <Navigation
           active={active}
           config={config}
           user={user}
