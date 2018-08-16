@@ -1,15 +1,23 @@
 // @flow
-import type {User} from './Types';
-import React, {PropTypes, Component} from 'react';
-import director from 'director';
-import Auth from 'netlify-auth-js';
-import Commerce from 'gocommerce-js';
-import {WithAuthentication, Navigation, Customers, Discounts, Order, Orders, Reports} from './Components';
-import './semantic/dist/semantic.min.css';
-import './App.css';
-import config from './config/default.json';
+import type { User } from "./Types";
+import React, { PropTypes, Component } from "react";
+import director from "director";
+import Auth from "netlify-auth-js";
+import Commerce from "gocommerce-js";
+import {
+  WithAuthentication,
+  Navigation,
+  Customers,
+  Discounts,
+  Order,
+  Orders,
+  Reports
+} from "./Components";
+import "./semantic/dist/semantic.min.css";
+import "./App.css";
+import config from "./config/default.json";
 
-const env = process.env.REACT_APP_ENV || 'dev';
+const env = process.env.REACT_APP_ENV || "dev";
 if (process.env.REACT_APP_SITE_URL) {
   config.siteURL = process.env.REACT_APP_SITE_URL;
 }
@@ -26,12 +34,12 @@ if (process.env.REACT_APP_RECEIPT_TEMPLATE) {
   config.receiptTemplate = process.env.REACT_APP_RECEIPT_TEMPLATE;
 }
 
-const auth = new Auth({APIUrl: config.netlifyAuth});
-const commerce = new Commerce({APIUrl: config.netlifyCommerce});
+const auth = new Auth({ APIUrl: config.netlifyAuth });
+const commerce = new Commerce({ APIUrl: config.netlifyCommerce });
 
 type Router = {
   init: () => void,
-  setRoute: (string) => void
+  setRoute: string => void
 };
 
 function NotFound(props) {
@@ -50,8 +58,8 @@ class App extends Component {
   props: {};
   state: {
     user: ?User,
-    route: 'reports' | 'orders' | 'order' | 'customers',
-    active: 'Reports' | 'Orders' | 'Customers',
+    route: "reports" | "orders" | "order" | "customers",
+    active: "Reports" | "Orders" | "Customers",
     params: {},
     query: ?{}
   };
@@ -62,43 +70,55 @@ class App extends Component {
     router: PropTypes.object
   };
 
-  constructor(props : {}) {
+  constructor(props: {}) {
     super(props);
-    const user =  auth.currentUser();
+    const user = auth.currentUser();
     commerce.setUser(user);
-    this.state = {user, route: "reports", active: "Reports", params: {}, query: null};
+    this.state = {
+      user,
+      route: "reports",
+      active: "Reports",
+      params: {},
+      query: null
+    };
   }
 
   componentDidMount() {
     this.router = new director.Router({
-      "/": () => this.setState({route: "reports", active: "Reports"}),
-      "/orders": () => this.setState({route: "orders", active: "Orders"}),
-      "/orders/:id": (id) => this.setState({route: "order", active: "Orders", params: {id}}),
-      "/orders/:id/:item": (id, item) => this.setState({route: "order", active: "Orders", params: {id, item}}),
-      "/customers": () => this.setState({route: "customers", active: "Customers"}),
-    }).configure({html5history: true});
+      "/": () => this.setState({ route: "reports", active: "Reports" }),
+      "/orders": () => this.setState({ route: "orders", active: "Orders" }),
+      "/orders/:id": id =>
+        this.setState({ route: "order", active: "Orders", params: { id } }),
+      "/orders/:id/:item": (id, item) =>
+        this.setState({
+          route: "order",
+          active: "Orders",
+          params: { id, item }
+        }),
+      "/customers": () =>
+        this.setState({ route: "customers", active: "Customers" })
+    }).configure({ html5history: true });
     this.router.init();
   }
 
   handleLogin = (email: string, password: string) => {
-    return auth.login(email, password)
-      .then((user) => {
-        user.persistSession(user);
-        commerce.setUser(user);
-        this.setState({user});
-        return user;
-      });
+    return auth.login(email, password).then(user => {
+      user.persistSession(user);
+      commerce.setUser(user);
+      this.setState({ user });
+      return user;
+    });
   };
 
   handleLogout = () => {
-    const {user} = this.state;
+    const { user } = this.state;
     user && user.logout();
-    this.setState({user: null});
+    this.setState({ user: null });
   };
 
   handleLink = (e: SyntheticInputEvent) => {
     e.preventDefault();
-    const path = e.target.getAttribute('href');
+    const path = e.target.getAttribute("href");
     if (path) {
       this.handlePush(path);
     }
@@ -109,27 +129,37 @@ class App extends Component {
   };
 
   render() {
-    const {user, route, active, params, query} = this.state;
+    const { user, route, active, params, query } = this.state;
 
     const component = MainComponent[route] || null;
 
-    return (<div className="App">
-      <WithAuthentication user={user} onLogin={this.handleLogin}>
-        <Navigation
-          active={active}
-          config={config}
-          user={user}
-          route={route}
-          onLink={this.handleLink}
-          onLogout={this.handleLogout}
-        />
-        <div className="Main">
-          {component && React.createElement(component, {
-            config, route, commerce, user, params, query, push: this.handlePush, onLink: this.handleLink
-          })}
-        </div>
-      </WithAuthentication>
-    </div>);
+    return (
+      <div className="App">
+        <WithAuthentication user={user} onLogin={this.handleLogin}>
+          <Navigation
+            active={active}
+            config={config}
+            user={user}
+            route={route}
+            onLink={this.handleLink}
+            onLogout={this.handleLogout}
+          />
+          <div className="Main">
+            {component &&
+              React.createElement(component, {
+                config,
+                route,
+                commerce,
+                user,
+                params,
+                query,
+                push: this.handlePush,
+                onLink: this.handleLink
+              })}
+          </div>
+        </WithAuthentication>
+      </div>
+    );
   }
 }
 
