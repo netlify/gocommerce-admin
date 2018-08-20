@@ -1,3 +1,12 @@
 /*******************************
     User Variable Overrides
 *******************************/
+
+.ui.card>.content>.header+.description {
+    margin-left: 20px;
+}
+.ui.card>.content>.description {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

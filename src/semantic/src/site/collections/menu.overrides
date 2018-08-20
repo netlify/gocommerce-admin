@@ -1,3 +1,20 @@
 /*******************************
          Site Overrides
 *******************************/
+
+.ui.menu .item:before {
+    background: none;
+}
+.ui.pagination.menu{
+        min-height: 20px;
+        height: 27px;
+}
+
+.ui.pagination.menu .item {
+    color: #62676e;
+    text-transform: lowercase;
+    font-size: 13px;
+    padding: 7px;
+    min-width: 2px;
+    background-image: linear-gradient(to bottom, #ffffff, #f6f7f9);
+}

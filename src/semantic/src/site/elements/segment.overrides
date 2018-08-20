@@ -1,3 +1,6 @@
 /*******************************
          Site Overrides
 *******************************/
+.segment .ui.horizontal.list {
+   float:right;
+}

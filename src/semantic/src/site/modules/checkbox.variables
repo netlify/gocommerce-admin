@@ -1,3 +1,13 @@
 /*******************************
     User Variable Overrides
 *******************************/
+
+@checkboxSize: 14px;
+@labelDistance: 20px;
+
+/* Label */
+@labelFontSize: 16px;
+@labelColor: @blue;
+
+@checkboxCheckFontSize: 12px;
+@checkboxActiveFocusBackground: red;

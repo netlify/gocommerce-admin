@@ -333,6 +333,7 @@ export default class Orders extends Component {
     this.props.commerce.orderHistory(this.orderQuery())
       .then((response) => {
         const {orders, pagination} = response;
+        console.log(pagination, 'test')
         if (pagination.last < this.state.page && this.state.page !== 1) {
           return this.changePage(1);
         }

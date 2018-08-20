@@ -1,3 +1,9 @@
 /*******************************
     User Variable Overrides
 *******************************/
+@descriptionColor: @grey;
+@contentFontSize: 13px;
+
+@borderRadius: 5px;
+@background: #ffffff;
+@boxShadow: 0 2px 6px 0 rgba(42, 72, 114, 0.1), 0 1px 3px 0 rgba(42, 72, 114, 0.05);
