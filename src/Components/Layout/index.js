@@ -27,8 +27,6 @@ export default function({breadcrumb, menu, onLink, children}: Object) {
       </Grid.Row>
     </Grid>
 
-    <Divider/>
-
     {children}
   </div>
 }

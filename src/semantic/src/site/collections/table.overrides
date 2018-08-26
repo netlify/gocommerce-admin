@@ -1,3 +1,38 @@
 /*******************************
          Site Overrides
 *******************************/
+.ui.table {
+    margin-top: 30px;
+}
+
+.ui.table .left-header th{
+    background: #2a4872;
+    background-color: #2a4872;
+    color: #ffffff;
+    font-weight: normal;
+}
+
+.ui.table:first-child {
+    margin-top: 30px;
+}
+.ui.table tbody tr {
+    color: #2a4872;
+}
+.ui.table .left-body tr:first-child {
+    background-color: #4a6184;
+    color: #ffffff;
+}
+
+@media only screen and (max-width: 767px){
+    .left-header {
+        background-color: #2a4872;
+    }
+    .ui.table:first-child {
+        margin-top: 40px;
+    }
+}
+@media (max-width: 900px) {
+   .ui.table:first-child {
+        margin-top: 40px;
+    }
+}

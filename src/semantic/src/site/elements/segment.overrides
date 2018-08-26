@@ -1,3 +1,10 @@
 /*******************************
          Site Overrides
 *******************************/
+
+.ui.segment:first-child{
+    margin: 5px;
+}
+.ui.segment:last-child{
+    margin: 5px;
+}
