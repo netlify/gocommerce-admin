@@ -10,7 +10,8 @@ import {
   Card,
   Segment,
   Input,
-  Button
+  Button, 
+  Container
 } from "semantic-ui-react";
 import ErrorMessage from "../Messages/Error";
 import Gravatar from "react-gravatar";
@@ -115,7 +116,7 @@ export default class Customers extends Component {
     const { loading, error, customers, pagination } = this.state;
 
     return (
-      <div>
+      <Container>
         <Form onSubmit={this.search}>
           <Form.Input
             action
@@ -132,8 +133,8 @@ export default class Customers extends Component {
         </Form>
         <ErrorMessage error={error} />
         <Segment basic>
-          <Button />
-          <Button />
+          <Button className="export-data"/>
+          <Button className="delete-data"/>
           <PaginationView
             {...pagination}
             perPage={PER_PAGE}
@@ -158,7 +159,7 @@ export default class Customers extends Component {
               ))}
           </Card.Group>
         </Segment>
-      </div>
+      </Container>
     );
   }
 }
