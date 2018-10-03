@@ -2,7 +2,7 @@
 import type { Config, Commerce, Currency } from "../../Types";
 import React, { Component } from "react";
 import addWeeks from "date-fns/add_weeks";
-import { Table, Segment, Grid, List, Divider } from "semantic-ui-react";
+import { Container, Table, Segment, Grid, List, Divider } from "semantic-ui-react";
 import fx from "money";
 import Layout from "../Layout";
 import ErrorMessage from "../Messages/Error";
@@ -12,27 +12,30 @@ import { RoadIcon } from "mdi-react";
 
 const EXCHANGE_RATE_API = "https://api.fixer.io/latest?base=USD";
 
-type SalesRow = {
+type SalesRow = Array<{
   subtotal: number,
   taxes: number,
   total: number,
   currency: Currency
-};
+}>;
+
 type SalesReport = Array<SalesRow>;
-type ProductsRow = {
+
+type ProductsRow = Array<{
   sku: string,
   path: string,
   total: number,
   currency: Currency
-};
+}>;
+
 type ProductsReport = Array<ProductsRow>;
 
 function ts(date) {
   return parseInt(date.getTime() / 1000, 10);
 }
 
-function getLastSecond(month) {
-  return new Date(2018, month + 1, 1, 0, 0, -1);
+function getLastSecond(year: number, month: number) {
+  return new Date(year, month + 1, 1, 0, 0, -1);
 }
 
 function sumUSD(sales, field) {
@@ -56,61 +59,44 @@ function withRates() {
       fx.rates = data.rates;
     });
 }
+const makeTotals = (us: ?number, eu: ?number) => {
+  let totalAmount = "0.00";
 
-const makeSalesRows = (us: Object[], eu, key, title, orders ) => {
-  if (us.length > 0 && eu.length > 0) {
-    return (
-      <Table.Row key={key}>
-        <Table.Cell>{title}</Table.Cell>
-        <Table.Cell>{orders}</Table.Cell>
-        <Table.Cell>{us[0].total + "$" + " + " + "€"  + eu[0].total}</Table.Cell>
-      </Table.Row>
-    );
-  } else if (us.length > 0) {
-    return (
-      <Table.Row key={key}>
-        <Table.Cell>{title}</Table.Cell>
-        <Table.Cell>{orders}</Table.Cell>
-        <Table.Cell>{us[0].total + " $"}</Table.Cell>
-      </Table.Row>
-    );
-  } else if (eu.length > 0) {
-    return (
-      <Table.Row key={key}>
-        <Table.Cell>{title}</Table.Cell>
-        <Table.Cell>{orders}</Table.Cell>
-        <Table.Cell>{eu[0].total + " €"}</Table.Cell>
-      </Table.Row>
-    );
+  if (us && eu) {
+    totalAmount = formatPrice(us, "USD") + " + " + formatPrice(eu, "EUR");
+  } else if (us) {
+    totalAmount = formatPrice(us, "USD");
+  } else if (eu) {
+    totalAmount = formatPrice(eu, "EUR");
   }
+  return totalAmount;
 };
 
-const makeProductsRows = (us: Object[], eu, key, title, orders ) => {
-  if (us.length > 0 && eu.length > 0) {
-    return (
-      <Table.Row key={key}>
-        <Table.Cell>{title}</Table.Cell>
-        <Table.Cell>{orders}</Table.Cell>
-        <Table.Cell>{us[0].total + "$" + " + " + "€"  + eu[0].total}</Table.Cell>
-      </Table.Row>
-    );
-  } else if (us.length > 0) {
-    return (
-      <Table.Row key={key}>
-        <Table.Cell>{title}</Table.Cell>
-        <Table.Cell>{orders}</Table.Cell>
-        <Table.Cell>{us[0].total + " $"}</Table.Cell>
-      </Table.Row>
-    );
-  } else if (eu.length > 0) {
-    return (
-      <Table.Row key={key}>
-        <Table.Cell>{title}</Table.Cell>
-        <Table.Cell>{orders}</Table.Cell>
-        <Table.Cell>{eu[0].total + " €"}</Table.Cell>
-      </Table.Row>
-    );
-  }
+const makeSalesRows = (us: Object[], eu: Object[], key, title, orders) => {
+  const usAmount = us.length > 0 ? us[0].total : undefined;
+  const euAmount = eu.length > 0 ? eu[0].total : undefined;
+  return (
+    <Table.Row key={key}>
+      <Table.Cell>{title}</Table.Cell>
+      <Table.Cell>{orders ? orders : "0"}</Table.Cell>
+      <Table.Cell>{makeTotals(usAmount, euAmount)}</Table.Cell>
+    </Table.Row>
+  );
+};
+
+const makeProductRows = (us: Object[], eu: Object[], product, i, config) => {
+  const usAmount = us.length > 0 ? us[0].total : undefined;
+  const euAmount = eu.length > 0 ? eu[0].total : undefined;
+  return (
+    <Table.Row key={i}>
+      <Table.Cell>
+        <a href={`${config.siteURL}${product[0].path}`} target="_blank">
+          {product[0].sku}
+        </a>
+      </Table.Cell>
+      <Table.Cell>{makeTotals(usAmount, euAmount)}</Table.Cell>
+    </Table.Row>
+  );
 };
 
 type props = {
@@ -141,11 +127,7 @@ export default class Reports extends Component {
   }
 
   componentDidMount() {
-    // last 7 days
-    // last 30 days
-    // for each month in the last twelve months
-    //most recent 12 monts
-    const rotate = function(arr, n) {
+    const rotate = function<T>(arr: Array<T>, n: number): Array<T> {
       const len = arr.length;
       return arr.slice(len - n).concat(arr.slice(0, len - n));
     };
@@ -153,8 +135,31 @@ export default class Reports extends Component {
     const createDate = new Date();
     const currentMonth = createDate.getMonth();
     const currentYear = createDate.getFullYear();
-    const months = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2, 0];
-    const currentMonths = rotate(months, currentMonth - 1);
+
+    const months = [];
+    for (let i = 11; i >= 0; i--) {
+      months.push({
+        month: i,
+        year: i < currentMonth ? currentYear : currentYear-1
+      })
+    }
+
+    const monthStrings = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+  
+    const currentMonths = rotate(months, currentMonth);
 
     Promise.all([
       this.props.commerce.report("sales", {
@@ -163,10 +168,10 @@ export default class Reports extends Component {
       this.props.commerce.report("sales", {
         from: ts(addDays(new Date(), -30))
       }),
-      ...currentMonths.map(month => {
+      ...currentMonths.map(({ month, year }) => {
         return this.props.commerce.report("sales", {
-          from: ts(new Date(currentYear, month)),
-          to: ts(getLastSecond(month))
+          from: ts(new Date(year, month)),
+          to: ts(getLastSecond(year, month))
         });
       })
     ])
@@ -174,46 +179,36 @@ export default class Reports extends Component {
         const titles = [
           "Last 7 days",
           "last 30 days",
-          ...rotate([
-          "December",
-          "November",
-          "October",
-          "September",
-          "August",
-          "July",
-          "June",
-          "May",
-          "April",
-          "March",
-          "February",
-          "January"
-        ], currentMonth - 1)];
-        //attach the title/months to each reports object
+          ...currentMonths.map(({ month, year }) => `${monthStrings[month]} ${year}`)
+        ];
         reports.forEach((report, i) => {
-          report.title = titles[i];
-        })
+          report.title = titles[i] 
+        });
         this.setState({ loading: false, sales: reports });
       })
       .catch(error => {
         this.setState({ loading: false, error });
       });
-    Promise.all([
-        this.props.commerce.report("products", {
-          from: ts(addWeeks(new Date(), -1))
-        }),
-        this.props.commerce.report("products", {
-          from: ts(addDays(new Date(), -30))
-        }),
-        ...currentMonths.map(month => {
-          return this.props.commerce.report("products", {
-            from: ts(new Date(currentYear, month)),
-            to: ts(getLastSecond(month))
-          });
-        })
-    ])
-      .then(report => {
-        console.log(report)
-        this.setState({ loading: false, products: report });
+    this.props.commerce
+      .report("products", {
+        from: ts(addWeeks(new Date(), -30))
+      })
+      .then(reports => {
+        const allReports = [];
+        const reportsMap = new Map();
+
+        for (let r of reports) {
+          const dupe = reportsMap.get(r.sku);
+          if (!dupe) {
+            reportsMap.set(r.sku, [r]);
+          } else {
+            dupe.push(r);
+          }
+        }
+        for (let [k, v] of reportsMap) {
+          allReports.push(v);
+        }
+        this.setState({ loading: false, products: allReports });
       })
       .catch(error => {
         this.setState({ loading: false, error });
@@ -228,89 +223,43 @@ export default class Reports extends Component {
       <div>
         <Layout breadcrumb={[{ label: "Reports", href: "/" }]} onLink={onLink}>
           <ErrorMessage error={error} />
-          <Grid stackable container columns={2}>
-            <Grid.Column textAlign="center" floated="left" width={7}>
-              <Table>
-                <Table.Header className="left-header">
-                  <Table.Row>
-                    <Table.HeaderCell>Last 7 Days</Table.HeaderCell>
-                    <Table.HeaderCell>Approved</Table.HeaderCell>
-                    <Table.HeaderCell>sales</Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body className="left-body">
+          <Container>
+          <Grid stackable centered columns={2}>
+            <Grid.Column textAlign="center" width={9}>
+              <Table className="left-table">
+                <Table.Body>
                   {sales &&
                     sales.map((sale, i) => {
                       const usd = sale.filter(s => s.currency === "USD");
                       const eur = sale.filter(s => s.currency === "EUR");
-                      return makeSalesRows(usd,eur,i, sale.title, "test")
+                      // TODO: Replace empty string with order total once API provides that info
+                      return makeSalesRows(usd, eur, i, sale.title, " "); 
                     })}
                 </Table.Body>
               </Table>
             </Grid.Column>
-            <Grid.Column floated="right" width={6}>
-              <Table>
+            <Grid.Column width={6}>
+              <Table className="right-table">
                 <Table.Header>
                   <Table.Row>
                     <Table.HeaderCell>
-                      Top Products: Last 7 Days
+                      <span>TOP PRODUCTS: </span>
+                      <span style={{ color: "#a3a8af" }}>LAST 7 DAYS</span>
                     </Table.HeaderCell>
                   </Table.Row>
                 </Table.Header>
-                <Divider />
                 <Table.Body>
-                  <Table.Row>
-                    <Table.Cell>smashing-book-6</Table.Cell>
-                    <Table.Cell>Cost</Table.Cell>
-                  </Table.Row>
+                  {products &&
+                    products.map((product, i) => {
+                      const usd = product.filter(s => s.currency === "USD");
+                      const eur = product.filter(s => s.currency === "EUR");
+                      return makeProductRows(usd, eur, product, i, config);
+                    })}
                 </Table.Body>
               </Table>
             </Grid.Column>
           </Grid>
-          {/* <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Currency</Table.HeaderCell>
-            <Table.HeaderCell>SubTotal</Table.HeaderCell>
-            <Table.HeaderCell>Taxes</Table.HeaderCell>
-            <Table.HeaderCell>Total</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {sales && sales.map((row, i) => <Table.Row key={i}>
-            <Table.Cell>{row.currency}</Table.Cell>
-            <Table.Cell>{formatPrice(row.subtotal, row.currency)}</Table.Cell>
-            <Table.Cell>{formatPrice(row.taxes, row.currency)}</Table.Cell>
-            <Table.Cell>{formatPrice(row.total, row.currency)}</Table.Cell>
-          </Table.Row>)}
-        </Table.Body>
-        <Table.Footer>
-          {salesTotal &&<Table.Row>
-            <Table.HeaderCell>Estimated Total in {salesTotal.currency}</Table.HeaderCell>
-            <Table.HeaderCell>{formatPrice(salesTotal.subtotal, salesTotal.currency)}</Table.HeaderCell>
-            <Table.HeaderCell>{formatPrice(salesTotal.taxes, salesTotal.currency)}</Table.HeaderCell>
-            <Table.HeaderCell>{formatPrice(salesTotal.total, salesTotal.currency)}</Table.HeaderCell>
-          </Table.Row>}
-        </Table.Footer>
-      </Table>
-
-      <h2>Top Products Last Week</h2>
-      <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Product</Table.HeaderCell>
-            <Table.HeaderCell>Amount Sold</Table.HeaderCell>
-            <Table.HeaderCell>Currency</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {products && products.map((row, i) => <Table.Row key={i}>
-            <Table.Cell><a href={`${config.siteURL}${row.path}`} target="_blank">{row.sku}</a></Table.Cell>
-            <Table.Cell>{formatPrice(row.total, row.currency)}</Table.Cell>
-            <Table.Cell>{row.currency}</Table.Cell>
-          </Table.Row>)}
-        </Table.Body>
-      </Table> */}
+          </Container>
         </Layout>
       </div>
     );
