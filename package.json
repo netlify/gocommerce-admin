@@ -52,6 +52,7 @@
     "build:css": "cd src/semantic && gulp build",
     "start": "yarn build:css && react-scripts start",
     "build": "yarn build:css && react-scripts build",
+    "watch:css": "cd src/semantic && gulp watch",
     "test": "react-scripts test --env=jsdom",
     "lint": "yarn lint:js",
     "lint:js": "eslint .",
