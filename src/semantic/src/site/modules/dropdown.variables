@@ -1,3 +1,7 @@
 /*******************************
     User Variable Overrides
 *******************************/
+
+@raisedShadow: 0 20px 60px 0 rgba(69, 85, 107, 0.15), 0 3px 9px 0 rgba(69, 85, 107, 0.15);
+@menuBackground: #FFFFFF;
+@menuBoxShadow: @raisedShadow;

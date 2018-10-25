@@ -1,3 +1,7 @@
 /*******************************
          Site Overrides
 *******************************/
+.ui.container.outerScroll {
+    overflow-x: auto;
+    transform: rotateX(180deg);
+}

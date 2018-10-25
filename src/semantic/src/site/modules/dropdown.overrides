@@ -1,3 +1,18 @@
 /*******************************
         User Overrides
 *******************************/
+
+.orders-col .selection.dropdown{
+    min-height: 20px;
+    height: 27px;
+    vertical-align: inherit;
+    border: 1px solid rgba(34,36,38,.15);
+    box-shadow: 0 2px 6px 0 rgba(42,72,114,.05), 0 1px 3px 0 rgba(42,72,114,.1);
+}
+.orders-col .dropdown:not(.button)>.default.text{
+    margin: auto;
+}
+.orders-col .dropdown .item .header{
+    color: #2a4872;
+    margin: 0 0 5px;
+}
