@@ -39,3 +39,6 @@
 @inputFocusColor:  @focusedFormBorderColor;
 @inputFocusBoxShadow: @inputFocusPointerSize 0em 0em 0em @selectedBorderColor inset;
 @inputFocusBorderRadius: @inputBorderRadius;
+
+@labelColor: @blue;
+@labelFontWeight: normal;

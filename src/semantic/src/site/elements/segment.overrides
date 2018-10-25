@@ -1,3 +1,59 @@
 /*******************************
          Site Overrides
 *******************************/
+
+.ui.segment.order-item {
+    padding: 16px 21px;
+}
+.ui.segment.order-item .header {
+    color: #2a4872;
+}
+.order-item {
+    display: flex;
+}
+.order-item .sub.header p {
+    color: #62676e;
+}
+.order-item .ui.header { 
+    margin-top:0;
+    flex-grow: 1;
+}
+.order-item .item-quantity  {
+    width: 30px;
+    color: #a3a8af;
+}
+.ui.segment .order-prices {
+    width: 175px;
+}
+.ui.segment .order-prices h3 {
+    text-align: right;
+    color: #2a4872;
+}
+.ui.segment .order-prices p{
+    text-align: left;
+    display: inline-block;
+}
+.item-type p{
+    float: left;
+    margin-right: 30px;
+    color: #62676e;
+}
+.ui.segment p.price-detail{
+    font-size: 13px;
+    width:100px;
+    min-width: 100px;
+    color: #62676e;
+}
+.ui.segment p.price-detail + p{
+    font-size: 13px;
+    float: right;
+    color: #2a4872;
+}
+.ui.segment .price-total {
+    text-align: right;
+    font-size: 13px;
+    color: #62676e;
+}
+.ui.segment .price-total p {
+    margin-bottom: 0;
+}

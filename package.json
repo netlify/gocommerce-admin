@@ -6,7 +6,8 @@
     "eslint": "^3.19.0",
     "eslint-plugin-flowtype": "^2.32.1",
     "flow-bin": "^0.37.4",
-    "react-scripts": "0.9.5"
+    "react-scripts": "0.9.5",
+    "react-to-print": "^2.0.0-alpha-4"
   },
   "dependencies": {
     "better-console": "^1.0.1",

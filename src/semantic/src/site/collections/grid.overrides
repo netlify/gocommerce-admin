@@ -1,3 +1,20 @@
 /*******************************
          Site Overrides
 *******************************/
+.ui.grid .row.order-col {
+    max-width: 980px;
+    margin: auto;
+    margin-top: 30px;
+}
+.ui.grid .column .order-billing, .ui.grid .column .order-shipping{
+  margin-bottom: 5px;
+  padding: 10px;
+  color: #2a4872;
+}
+.order-prices {
+    float: right;
+}
+.order-prices hr {
+    border: none;
+    border-top: 4px double  #2a4872;
+} 
