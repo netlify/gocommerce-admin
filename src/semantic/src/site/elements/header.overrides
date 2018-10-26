@@ -1,3 +1,39 @@
 /*******************************
          Site Overrides
 *******************************/
+.order-col .ui.attached.header{
+    background-color: #2a4872;
+    display: flex;
+    justify-content: space-between;
+    padding: 22px 35px;
+}
+.order-col .sub.header p{
+    color: #c1cdde;
+    font-weight: normal;
+    font-size: 13px;
+}
+.order-col .order-billing h3, .order-col .order-shipping h3{
+    font-weight: bold;
+}
+.order-col .sub.header:first-child{
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 16px;
+}
+.order-col .sub.header:nth-child(2){
+    text-align: right;
+    font-size: 13px;
+    color: #ffffff;
+}
+.sub.header.billing-status:nth-child(2), .sub.header.shipping-status:nth-child(2){
+    color: #62676e;
+    text-align: left;
+}
+.order-col .sub.header.billing-status-paid:nth-child(2), .order-col .sub.header.shipping-status-shipped:nth-child(2){
+    color: #2abc2e;
+    text-align: left;
+}
+.sub.header.billing-status-paid svg, .sub.header.shipping-status-shipped svg{
+    vertical-align: text-bottom;
+}
+

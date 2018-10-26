@@ -1,8 +1,11 @@
 // @flow
-import type {Config, Currency, Commerce, Order, Customer, TransactionType} from '../../Types';
-import React, {PropTypes, Component} from 'react';
+import type { Config, Currency, Commerce, Order, Customer, TransactionType } from '../../Types';
+import React, { PropTypes, Component } from 'react';
+import ReactToPrint from "react-to-print";
 import format from 'date-fns/format';
-import {Button, Form, Grid, Header, List, Message, Segment, Table} from 'semantic-ui-react';
+import { Button, Form, Grid, Header, List, Message, Segment, Table, Container, Modal } from 'semantic-ui-react';
+import CheckboxMarkedIcon from "mdi-react/CheckboxMarkedIcon";
+import CloseCircleIcon from "mdi-react/CloseCircleIcon";
 import Layout from '../Layout';
 import ErrorMessage from '../Messages/Error';
 import Address from './Address';
@@ -55,18 +58,28 @@ export default class OrderView extends Component {
     config: Config,
     push: (string) => void,
     onLink: (SyntheticEvent) => void,
+    onSave: (SyntheticEvent) => void
   };
   state: {
     loading: boolean,
     error: ?Object,
     order: ?Order,
     customer: ?Customer,
-    newFullfilementState: ?string
+    newFullfilementState: ?string,
+    modalOpen: boolean
   };
+  componentRef: ?HTMLDivElement;
 
   constructor(props: Object) {
     super(props);
-    this.state = {loading: true, error: null, order: null, customer: null, newFullfilementState: null};
+    this.state = { 
+      loading: true, 
+      error: null, 
+      order: null, 
+      customer: null, 
+      newFullfilementState: null, 
+      modalOpen: false
+    };
   }
 
   componentDidMount() {
@@ -82,23 +95,22 @@ export default class OrderView extends Component {
         this.setState({loading: false, error});
       });
   }
+  
+  handleOpen = () => this.setState({ modalOpen: true })
+
+  handleClose = () => this.setState({ modalOpen: false })
 
   handleSave = (item: 'shipping_address' | 'billing_address' | 'fulfillment_state', data: Object | string) => {
     const {commerce, push} = this.props;
     const {order} = this.state;
     if (!order) {
-      return;
+      return Promise.resolve();
     }
 
-    this.setState({loading: true});
-    commerce.updateOrder(order.id, {[item]: data})
+    return commerce.updateOrder(order.id, {[item]: data})
       .then((order) => {
         push(`/orders/${order.id}`);
         this.setState({loading: false, error: null, order});
-      })
-      .catch((error) => {
-        console.error("Error updating order: %o");
-        this.setState({loading: false, error});
       })
   };
 
@@ -125,183 +137,158 @@ export default class OrderView extends Component {
     commerce.orderReceipt(order.id, config.receiptTemplate).then((data) => {
       openWindow.document.body.innerHTML = data.data;
     });
-
   }
 
   render() {
-    const {config, params, onLink} = this.props;
+    const {config, params, onLink } = this.props;
     const {customer, loading, error, order, newFullfilementState} = this.state;
-
     const item = params.item ? EditableItems[params.item] : null;
 
     return <Layout
       breadcrumb={[{label: "Orders", href: "/orders"}, {label: formatId(params.id), href: `/orders/${params.id}`}]}
       onLink={onLink}
-    >
+    ><Container>
       <ErrorMessage error={error}/>
-
-      <Grid columns="equal">
-        <Grid.Row>
-          <Grid.Column>
-            <Segment loading={loading}>
-              <Header as="h2" dividing>
-                Order Details
-                <Header.Subheader>
-                  {params.id}
-                </Header.Subheader>
-              </Header>
-
-              {item && React.createElement(item, {order, item: params.item, onLink, onSave: this.handleSave})}
-              {!item && <Grid columns={3} divided>
-                <Grid.Row>
-                  <Grid.Column>
-                    <h3>General Details</h3>
-
-                    {order && <p className="order-prices">
-                      Subtotal: <strong className="order-price">{formatPrice(order.subtotal, order.currency)}</strong><br/>
-                      Taxes: <strong className="order-price">{formatPrice(order.taxes, order.currency)}</strong><br/>
-                      Total: <strong className="order-price">{formatPrice(order.total, order.currency)}</strong>
-                    </p>}
-
-                    {order && <p>
-                      {format(order.created_at, 'MMM DD, YYYY')}
-                    </p>}
-
-                  </Grid.Column>
-
-                  <Grid.Column>
+        <Grid columns="equal">
+          <Grid.Row className="order-col">
+            <Grid.Column>
+              <Segment.Group>
+                <Header as='h3' attached='top'>
+                  <Header.Subheader>
+                      {params.id}
+                      {order && <p>
+                            {format(order.created_at, 'MMM DD, YYYY')} – {formatPrice(order.subtotal, order.currency)}
+                      </p>}
+                  </Header.Subheader>
+                {order && <Header.Subheader>
+                  {order.billing_address.name}
+                    {customer && <p>
+                    {customer.order_count} orders – {order.email}</p>}
+                  </Header.Subheader>}
+                </Header>
+                <Segment attached loading={loading}>
+                  {item && React.createElement(item, {order, item: params.item, onLink, onSave: this.handleSave})}
+                  {!item && <Grid container columns={2} >
+                  <Grid.Column width={6}>
+                    <Grid.Column className="order-billing">
                     <Address
-                        title="Billing Details"
+                        title="Billing"
                         address={order && order.billing_address}
                         href={`/orders/${params.id}/billing_address`}
-                        onLink={onLink}
-                    />
-                  </Grid.Column>
-
-                  <Grid.Column>
-                    <Address
-                        title="Shipping Details"
+                        onSave={this.handleSave}
+                        item="billing_address"
+                      />
+                        {order && order.transactions && order.transactions.map((t) => <Header.Subheader className={order.payment_state === "paid" ? "billing-status-paid" : "billing-status"} key={t.id}>
+                        {order.payment_state ==="paid"? <CheckboxMarkedIcon  size={16} color="currentColor"/> : null}
+                        {order.payment_state === "paid"? "Paid on " + format(t.created_at, 'MMM DD') : order.payment_state === "pending"? "Pending" : order.payment_state}
+                        {t.failure_description && <Message warning> 
+                          <Message.Header>Transaction failed</Message.Header>
+                            <p>{t.failure_description}</p>
+                          </Message>}
+                        </Header.Subheader>)}
+                    </Grid.Column>
+                    <Grid.Column className="order-shipping">
+                    <div ref={el => (this.componentRef = el)}>
+                      <Address
+                        title="Shipping"
                         address={order && order.shipping_address}
                         href={`/orders/${params.id}/shipping_address`}
-                        onLink={onLink}
-                    />
+                        onSave={this.handleSave}
+                        item="shipping_address"
+                      />
+                    </div>
+                        {order && <Header.Subheader className={order.fulfillment_state === "shipped" ? "shipping-status-shipped" : "shipping-status"}>
+                        {order.fulfillment_state === "shipped" ? <CheckboxMarkedIcon size={16} color="currentColor"/> : null}
+                        {order.fulfillment_state === "shipped" ? "Shipped " : order.fulfillment_state === "pending"? "Not shipped" :  order.fulfillment_state}
+                      </Header.Subheader>}
+                      <br/>
+                      <ReactToPrint
+                        trigger={() => <Button fluid>Print shipping label</Button>}
+                        content={() => this.componentRef}
+                      />
+                    </Grid.Column>
                   </Grid.Column>
-
-                </Grid.Row>
-              </Grid>}
-            </Segment>
-
-            <Segment loading={loading}>
-              <Header as="h2" dividing>
-                Line Items
-                <Header.Subheader>
-                  {order && formatItemTypes(order.line_items)}
-                </Header.Subheader>
-              </Header>
-
-              <Table celled striped>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.HeaderCell>
-                      SKU
-                    </Table.HeaderCell>
-                    <Table.HeaderCell>
-                      Item
-                    </Table.HeaderCell>
-                    <Table.HeaderCell>
-                      Attributes
-                    </Table.HeaderCell>
-                    <Table.HeaderCell>
-                      Type
-                    </Table.HeaderCell>
-                    <Table.HeaderCell>
-                      Qty
-                    </Table.HeaderCell>
-                    <Table.HeaderCell>
-                      Cost
-                    </Table.HeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {order && (order.line_items || []).map((item) => (
-                    <Table.Row key={item.id}>
-                      <Table.Cell><a href={`${config.siteURL}${item.path}`} target="_blank">{item.sku}</a></Table.Cell>
-                      <Table.Cell>
-                        <Header as="h4">
-                          {item.title || null}
-                          <Header.Subheader>
-                            {item.description && <div>{item.description}</div>}
-                          </Header.Subheader>
-                        </Header>
-                      </Table.Cell>
-                      <Table.Cell>{JSON.stringify(item.meta, null, 2)}</Table.Cell>
-                      <Table.Cell>{item.type || null}</Table.Cell>
-                      <Table.Cell>{item.quantity || null}</Table.Cell>
-                      <Table.Cell>{formatPrice(item.price, order.currency)}</Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table>
-            </Segment>
-          </Grid.Column>
-
-          <Grid.Column width={4}>
-            <Segment>
-              <Header as="h2">
-                Customer
-                <Header.Subheader>{order && order.email}</Header.Subheader>
-              </Header>
-
-              {!customer && <p>Anonymous Buyer</p>}
-              {customer && <p>{customer.order_count} total orders {" "}
-              <a href={`/customers/${customer.id}/orders`} onClick={onLink}>view</a></p>}
-
-            </Segment>
-
-            <Segment>
-              <Header as="h2">
-                Billing Status
-                <Header.Subheader>
-                  {order && order.payment_state}
-                  {order && order.payment_state === 'paid' && <a href="#" onClick={this.handleReceipt}> receipt</a>}
-                </Header.Subheader>
-              </Header>
-
-              {order && <List divided>
-                {order.transactions && order.transactions.map((t) => <List.Item key={t.id}>
-                  <List.Header>
-                    {formatPrice(t.amount, order.currency)} {formatTransactionType(t.type)}
-                  </List.Header>
-                  {format(t.created_at, 'MMM DD, YYYY')}
-
-                  {t.failure_description && <Message warning>
-                    <Message.Header>Transaction failed</Message.Header>
-                    <p>{t.failure_description}</p>
-                  </Message>}
-                </List.Item>)}
-              </List>}
-            </Segment>
-
-            <Segment>
-              <Header as="h2">
-                Shipping Status
-                <Header.Subheader>Shipping to {order && order.shipping_address && order.shipping_address.country}</Header.Subheader>
-              </Header>
-
-              <Form onSubmit={this.handleShippingUpdate}>
-                <Form.Group>
-                  <Form.Select
-                    options={[{value: "pending", text: "Pending"}, {value: "shipped", text: "shipped"}]}
-                    value={newFullfilementState ? newFullfilementState : order && order.fulfillment_state}
-                    onChange={this.handleChangeShippingState}
-                  />
-                </Form.Group>
-                {order && newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
-              </Form>
-            </Segment>
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
+                  <Grid.Column width={10}>
+                    <Grid.Column>
+                      {order && (order.line_items || []).map((item) => (
+                        <Modal size="medium" className={'item-info-modal'} trigger={ 
+                          <Segment onClick={this.handleOpen} className="order-item"> 
+                            <p className="item-quantity">{item.quantity + "x"}</p>
+                            <Header as="h4">
+                              {item.title || null}
+                              <Header.Subheader>
+                              <p>{item.sku}</p>
+                              </Header.Subheader>
+                            </Header>
+                            <div className="item-type">
+                              <p> {item.type || null} </p>
+                              <p>{formatPrice(item.price, order.currency)}</p>
+                            </div>
+                          </Segment>
+                        }
+                          open={this.state.modalOpen}
+                          onClose={this.handleClose}>
+                          <Modal.Header>{item.title}
+                            <CloseCircleIcon onClick={this.handleClose} color="white" className="close-icon" size={24} />
+                            <Segment>
+                              <p>SKU:</p>
+                              <p>{item.sku}</p>
+                              <br/>
+                              <p>Quantity:</p>
+                              <p>{item.quantity}</p>
+                              <br/>
+                              <p>Type</p>
+                              <p>{item.type}</p>
+                              <br/>
+                              <p>Price</p>
+                              <p>{formatPrice(item.price, order.currency)}</p>
+                              <br/>
+                              <p>Taxes</p>
+                              <p>{formatPrice(item.vat, order.currency)}</p>
+                              <br/>
+                              <p>Total</p>
+                              <p>{formatPrice(item.price + item.vat, order.currency)}</p>
+                            </Segment>  
+                          </Modal.Header>
+                          <Modal.Content>
+                            <Segment> 
+                              <p>Authors</p>
+                              <p>{item.meta ? item.meta.authors : null}</p>
+                              <br/>
+                              <p>Product path</p>
+                              <p><a href={`${config.siteURL}${item.path}`} target="_blank">{item.sku}</a></p>
+                              <br/>
+                              <p>Component</p>
+                              <p>{item.meta ? item.meta.component : null}</p>
+                            </Segment>
+                          </Modal.Content>
+                        </Modal>   
+                      ))}
+                    </Grid.Column>
+                      <Grid.Column className="order-prices">
+                        {order && <Segment basic>
+                          <p className="price-detail"> { Math.round((order.discount / order.total) * 100) + "%"} Discount</p>
+                          <p>{formatPrice(order.discount, order.currency)}</p>
+                          <br/>
+                          <p className="price-detail">Shipping</p>
+                          <p>{formatPrice(order.shipping, order.currency)}</p>
+                          <hr/>
+                          <Header as="h3" >{formatPrice(order.total, order.currency)}</Header>
+                          <div className="price-total">
+                          Before Tax: <p>{formatPrice(order.subtotal, order.currency)}</p><br />
+                          Taxes: <p>{formatPrice(order.taxes, order.currency)}</p><br />
+                          Total: <p >{formatPrice(order.total, order.currency)}</p>
+                          </div>
+                        </Segment>}
+                      </Grid.Column>
+                    </Grid.Column>
+                  </Grid>}
+                </Segment>
+              </Segment.Group>
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </Container>
     </Layout>;
   }
 }

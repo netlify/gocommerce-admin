@@ -5,7 +5,7 @@
 @submitPrimary: @blue;
 @medium: auto;
 @fontWeight: normal;
-
+@textColor: @blue;
 
  @coloredBackgroundImage: linear-gradient(to bottom, #2872ee, #0b50c3);
  
@@ -30,3 +30,4 @@
 @focusBoxShadow: '';
 @focusColor: @hoveredTextColor;
 @iconFocusOpacity: 0.85;
+
