@@ -82,10 +82,6 @@
      ui.left-table:first-child, .ui.right-table:first-child {
          margin-top: 80px;
     }
-    .ui.table thead th {
-        background: #2a4872;
-        color: #d4d4d5;
-    }
     .ui.celled.table tr th {
         border-left: 0;
     }
