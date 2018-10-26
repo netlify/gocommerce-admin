@@ -78,7 +78,7 @@ const makeSalesRows = (us: Object[], eu: Object[], key, title, orders) => {
   return (
     <Table.Row key={key}>
       <Table.Cell>{title}</Table.Cell>
-      <Table.Cell>{orders ? orders : "0"}</Table.Cell>
+      <Table.Cell>{orders ? orders : "0"} orders</Table.Cell>
       <Table.Cell>{makeTotals(usAmount, euAmount)}</Table.Cell>
     </Table.Row>
   );
@@ -230,10 +230,10 @@ export default class Reports extends Component {
                 <Table.Body>
                   {sales &&
                     sales.map((sale, i) => {
+                      const orders = sale.reduce((a, b) => a + b.orders, 0);
                       const usd = sale.filter(s => s.currency === "USD");
                       const eur = sale.filter(s => s.currency === "EUR");
-                      // TODO: Replace empty string with order total once API provides that info
-                      return makeSalesRows(usd, eur, i, sale.title, " "); 
+                      return makeSalesRows(usd, eur, i, sale.title, orders); 
                     })}
                 </Table.Body>
               </Table>
