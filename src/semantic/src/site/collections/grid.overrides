@@ -18,3 +18,7 @@
     border: none;
     border-top: 4px double  #2a4872;
 } 
+.grid .orders-col{
+    margin-top: 15px;
+    margin-bottom: 15px;
+}

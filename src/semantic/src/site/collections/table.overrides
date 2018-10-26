@@ -1,3 +1,32 @@
 /*******************************
          Site Overrides
 *******************************/
+
+.ui.table thead th {
+    background: #2a4872;
+    color: #d4d4d5;
+}
+.ui.celled.table tr th {
+    border-left: 0;
+}
+
+.ui.celled.table tr:nth-child(odd) {
+   background-color: #ffffff;
+}
+
+.ui.celled.table tr td{
+    border-left: 0;
+}
+
+.outerScroll .table{
+    transform: rotateX(180deg);
+}
+
+.outerScroll .table .tr-clickable .ID, outerScroll .table .tr-clickable .Total{
+    color: #2a4872;
+    font-weight: 600;
+}
+
+.outerScroll .table .tr-clickable {
+    color: #62676e;
+}

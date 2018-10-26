@@ -4,3 +4,4 @@
 
 @secondaryBackground: @paleBlue;
 @itemTextColor: #a3a8af;
+@dropdownBackground: #FFFFFF;
