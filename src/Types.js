@@ -29,14 +29,14 @@ export type Order = {
   subtotal: number,
   taxes: number,
   total: number,
-
+  discount: number,
   shipping_address: Address,
   billing_address: Address,
 
   payment_processor: 'stripe' | 'paypal',
   payment_state: 'pending' | 'paid',
   fulfillment_state: 'pending' | 'shipped',
-
+  shipping: number,
   currency: Currency,
 
   vatnumber: string,
@@ -53,7 +53,7 @@ export type Order = {
 
 export type LineItem = {
   id: string,
-
+  meta: Meta,
   title: string,
   sku: string,
   path: string,
@@ -64,7 +64,8 @@ export type LineItem = {
   type: string,
 
   created_at: string,
-  updated_at: string
+  updated_at: string,
+  vat: number
 };
 
 export type TransactionType = 'charge' | 'refund';
@@ -79,10 +80,19 @@ export type Transaction = {
 };
 
 export type Address = {
+  name:  string,
   first_name: string, last_name: string,
   company: string,
   address1: string, address2: string,
   city: string, country: string, state: string, zip: string
+};
+
+export type Meta = {
+  author:  string,
+  authors: string,
+  component: string,
+  product_path: string,
+  product_sku: string
 };
 
 export type Commerce = {
