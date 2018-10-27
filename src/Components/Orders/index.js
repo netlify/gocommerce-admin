@@ -13,7 +13,7 @@ import 'csvexport/dist/Export.min';
 import './Orders.css';
 
 
-const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
+const STORED_FIELDS_KEY = 'commerce.admin.orderFields.v2';
 const PER_PAGE = 50;
 
 // needed for cmd click functionality
@@ -139,7 +139,7 @@ class OrderDetail extends Component {
     onLink: (any) => void,
     onSelect: (string) => void
   };
-
+  
   handleClick = (e: SyntheticEvent) => {
     if (isCtrlKeyDown) {
       return window.open(`/orders/${this.props.order.id}`, '_blank')
