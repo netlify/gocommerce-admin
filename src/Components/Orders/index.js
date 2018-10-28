@@ -427,7 +427,7 @@ export default class Orders extends Component {
     const {onLink} = this.props;
     const {loading, allSelected, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
 
-    return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
+    return <Layout onLink={onLink}>
     <Container>
       <Dimmer.Dimmable dimmed={loading}>
         <ErrorMessage error={error}/>

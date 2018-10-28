@@ -57,7 +57,7 @@ export default class SideBar extends Component {
     const { active, user, onLink, onLogout } = this.props;
     return (
       <Container textAlign="center">
-        <Menu horizontal secondary fixed="top" widths={3}>
+        <Menu secondary fixed="top" widths={3}>
           <Menu.Item className="item-left">{currentDate}</Menu.Item>
           <Menu.Item className="item-group">
             {menuItems.map((item, i) => (

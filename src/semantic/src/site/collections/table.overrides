@@ -2,22 +2,18 @@
          Site Overrides
 *******************************/
 
-.ui.table thead th {
+.ui.container.outerScroll .table thead th {
   background: #2a4872;
   color: #d4d4d5;
-}
-.ui.celled.table tr th {
-  border-left: 0;
 }
 .ui.celled.table tr:nth-child(odd) {
   background-color: #ffffff;
 }
-.ui.celled.table tr td {
-  border-left: 0;
-}
+
 .ui.container.outerScroll .table {
   transform: rotateX(180deg);
 }
+
 .outerScroll .table .tr-clickable .ID,
 outerScroll .table .tr-clickable .Total {
   color: #2a4872;
@@ -26,3 +22,106 @@ outerScroll .table .tr-clickable .Total {
 .outerScroll .table .tr-clickable {
   color: #62676e;
 }
+.ui.left-table , .ui.right-table{
+     border: none;
+     box-shadow: 0 2px 6px 0 rgba(42, 72, 114, 0.1), 0 6px 18px 0 rgba(42, 72, 114, 0.05);
+}
+
+ .ui.table tbody tr {
+     color: #2a4872;
+}
+ .ui.left-table td {
+     font-size: 13px;
+     padding: 16px 30px;
+}
+ .ui.left-table tr td:nth-child(2) {
+     color: #989ea9;
+}
+ .left-table tbody tr td:first-child {
+     font-size: 16px;
+}
+
+ .left-table tbody tr:first-child {
+     background-color: #2a4872;
+     color: #c1cdde;
+}
+ .left-table tbody tr:first-child td:first-child {
+     border-radius: .28571429rem 0 0 0;
+}
+ .left-table tbody tr:first-child td:last-child {
+     border-radius: 0 .28571429rem 0 0;
+}
+ .left-table tbody tr:nth-child(2) {
+     background-color: #4a6184;
+     color: #c1cdde;
+}
+ .ui.table thead th {
+     border-bottom: none;
+     color: #2a4872;
+}
+ .ui.right-table{
+     padding: 20px;
+}
+ .ui.right-table tr:first-child td {
+     border-top: 2px solid #2a4872;
+}
+ .ui.right-table td {
+     font-size: 13px;
+     border-top: 1px solid #c1cdde;
+}
+ .ui.right-table td a {
+     color: #62676e;
+}
+ .ui.left-table {
+     max-width: 600px;
+}
+ .ui.right-table {
+     max-width: 360px;
+}
+ @media only screen and (max-width: 767px){
+   
+     .left-table tbody tr:first-child, .right-table thead tr:first-child {
+         border-radius: 10px 10px 0 0;
+    }
+     .left-header {
+         background-color: #2a4872;
+    }
+     .ui.left-table:first-child {
+         margin-top: 80px;
+    }
+     .ui.right-table {
+         border-radius: 10px;
+    }
+     .ui.right-table, .ui.left-table {
+         max-width:100%;
+    }
+}
+ @media (max-width:900px) and (min-width:767px){
+     ui.left-table:first-child, .ui.right-table:first-child {
+         margin-top: 80px;
+    }
+    .ui.celled.table tr th {
+        border-left: 0;
+    }
+
+    .ui.celled.table tr:nth-child(odd) {
+    background-color: #ffffff;
+    }
+
+    .ui.celled.table tr td{
+        border-left: 0;
+    }
+
+    .outerScroll .table{
+        transform: rotateX(180deg);
+    }
+
+    .outerScroll .table .tr-clickable .ID, outerScroll .table .tr-clickable .Total{
+        color: #2a4872;
+        font-weight: 600;
+    }
+
+    .outerScroll .table .tr-clickable {
+        color: #62676e;
+    }
+ }

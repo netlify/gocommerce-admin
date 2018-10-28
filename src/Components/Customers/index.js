@@ -82,7 +82,6 @@ export default class Customers extends Component {
             </Breadcrumb>
           </Grid.Column>
           <Grid.Column textAlign="right">
-
           </Grid.Column>
         </Grid.Row>
       </Grid>
