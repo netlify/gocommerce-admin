@@ -221,7 +221,7 @@ export default class Reports extends Component {
 
     return (
       <div>
-        <Layout breadcrumb={[{ label: "Reports", href: "/" }]} onLink={onLink}>
+        <Layout onLink={onLink}>
           <ErrorMessage error={error} />
           <Container>
           <Grid stackable centered columns={2}>
