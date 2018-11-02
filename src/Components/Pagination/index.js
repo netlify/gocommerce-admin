@@ -58,9 +58,8 @@ export default function Pagination({
 
   const from = (current - 1) * perPage;
   const to = Math.min(from + perPage, total);
-  const totalPages = Math.floor(total / perPage);
-  const paginationText = current + "of" + totalPages;
-
+  const paginationText = current + "of" + last;
+  
   return (
     <List horizontal>
       <List.Item>

@@ -10,3 +10,14 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+.customers .ui.card .extra p:nth-child(2){
+    float: right;
+}
+.customers .ui.card .extra p:first-child{
+    float: left;
+    margin-left: 20px;
+}
+.customers .ui.card .content .header {
+    color: #2a4872;
+    margin-left: 20px;
+}

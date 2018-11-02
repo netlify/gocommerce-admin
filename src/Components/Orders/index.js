@@ -1,18 +1,19 @@
 // @flow
-import type {Commerce, Pagination, Order, Address} from '../../Types';
+import type { Commerce, Pagination, Order, Address } from '../../Types';
 import _ from 'lodash';
-import React, {Component} from 'react';
-import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input, Select} from 'semantic-ui-react';
+import React, { Component } from 'react';
+import { Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input, Select, Form, Container } from 'semantic-ui-react';
 import Layout from '../Layout';
-import PaginationView, {pageFromURL} from '../Pagination';
+import PaginationView, { pageFromURL } from '../Pagination';
 import ErrorMessage from '../Messages/Error';
 import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
+import format from 'date-fns/format';
 import countries from '../../data/countries.json';
 import 'csvexport/dist/Export.min';
 import './Orders.css';
 
 
-const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
+const STORED_FIELDS_KEY = 'commerce.admin.orderFields.v2';
 const PER_PAGE = 50;
 
 // needed for cmd click functionality
@@ -23,7 +24,7 @@ function formatField(label: string, order: Order) {
   return order[label.toLowerCase().replace(/ /, '_')];
 }
 
-function formatLineItems(order: Order, csv: boolean) {
+function formatLineItems(order: Order, csv?: boolean) {
   if (csv) {
     return order.line_items && order.line_items.map((item) => `${item.quantity} x ${item.title}`).join(', ');
   }
@@ -49,7 +50,7 @@ function formatAddress(field: 'shipping_address' | 'billing_address') {
       return addr;
     }
     return addr && <div>
-      {addr.name}<br/>
+      {addr.first_name}<br/>
       {addr.company && <span>{addr.company}<br/></span>}
       {addr.address1}<br/>
       {addr.address2 && <span>{addr.address2}<br/></span>}
@@ -60,59 +61,75 @@ function formatAddress(field: 'shipping_address' | 'billing_address') {
 
 function formatPriceField(field: 'total' | 'taxes' | 'subtotal') {
   return (order) => {
-    const amount = (order[field] / 100).toFixed(2);
-    switch(order.currency) {
-      case "USD":
-        return `$${amount}`;
-      case "EUR":
-        return `${amount}€`;
-      default:
-        return `${amount} ${order.currency}`;
-    }
+    const currency = order.currency;
+    return field === 'taxes' ? formatTaxes(order) : '' + formatCurrency(order[field], currency, field);
   };
+}
+
+function formatTaxes(order: Order) {
+  const percentage = Math.round((order.taxes / order.total) * 100) + "%"
+  return `${percentage} \u2192 ${formatCurrency(order.taxes, order.currency)}`;
+}
+
+function formatCurrency(amount: number, currency: string) {
+  const amountString = (amount / 100).toFixed(2);
+  switch (currency) {
+    case "USD":
+      return `$${amountString}`;
+    case "EUR":
+      return `${amountString}€`;
+    default:
+      return `${amountString} ${currency}`;
+  }
 }
 
 function formatDateField(field: 'created_at' | 'updated_at') {
   return (order, csv) => {
     if (csv) { return JSON.stringify(order[field]); }
-    return distanceInWordsToNow(order[field]) + " ago";
+    return format(order[field],'MMM DD YYYY')
   }
 }
 
 const fields = {
   ID: {},
-  Email: {sort: "email"},
+  "Date": {sort: "created_at", fn: formatDateField("created_at")},
+  "Updated At": {sort: "updated_at", fn: formatDateField("updated_at")},
   Items: {fn: formatLineItems},
   Type: {fn: formatLineItemTypes},
-  "Shipping Address": {fn: formatAddress("shipping_address")},
-  "Shipping Country": {fn: (order) => order.shipping_address.country},
+  Subtotal: {sort: "subtotal", fn: formatPriceField("subtotal")},
+  Taxes: {sort: "taxes", fn: formatPriceField("taxes")},
+  Total: {sort: "total", fn: formatPriceField("total")},
+  Name: {fn: (order) => order.billing_address.name},
+  Email: {sort: "email"},
+  "Payment State": {},
   "Billing Address": {fn: formatAddress("billing_address")},
   "Billing Country": {fn: (order) => order.billing_address.country},
-  Taxes: {sort: "taxes", fn: formatPriceField("taxes")},
-  Subtotal: {sort: "subtotal", fn: formatPriceField("subtotal")},
+  "Billing Company": {fn: (order) => order.billing_address.company},
   "Shipping State": {fn: (order) => order.fulfillment_state},
-  "Payment State": {},
-  Total: {sort: "total", fn: formatPriceField("total")},
-  "Created At": {sort: "created_at", fn: formatDateField("created_at")},
-  "Updated At": {sort: "updated_at", fn: formatDateField("updated_at")}
+  "Shipping Address": {fn: formatAddress("shipping_address")},
+  "Shipping Country": {fn: (order) => order.shipping_address.country},
+  "Shipping Company": {fn: (order) => order.shipping_address.company}
 };
 
 const enabledFields = {
   ID: false,
+  "Date": true,
+  "Updated At":false,
   Items: true,
   Type: true,
+  Subtotal: false,
+  Taxes: false,
+  Total: true,
+  Name: false,
   Email: true,
-  "Shipping Address": false,
-  "Shipping Country": false,
+  "Payment State": true,
   "Billing Address": false,
   "Billing Country": false,
+  "Billing Company": false,
   "Shipping State": true,
-  "Payment State": true,
-  Taxes: false,
-  Subtotal: false,
-  Total: true,
-  "Created At": true,
-  "Updated At":false
+  "Shipping Address": false,
+  "Shipping Country": false,
+  "Shipping Company": false
 };
 
 class OrderDetail extends Component {
@@ -122,15 +139,14 @@ class OrderDetail extends Component {
     onLink: (any) => void,
     onSelect: (string) => void
   };
-
+  
   handleClick = (e: SyntheticEvent) => {
     if (isCtrlKeyDown) {
       return window.open(`/orders/${this.props.order.id}`, '_blank')
     }
-
     this.props.onLink({
       preventDefault: e.preventDefault,
-      target: {getAttribute: (a) => ({href: `/orders/${this.props.order.id}`}[a])}
+      target: { getAttribute: (a) => ({ href: `/orders/${this.props.order.id}` }[a]) }
     });
   };
 
@@ -140,21 +156,19 @@ class OrderDetail extends Component {
   };
 
   render() {
-    const {order, enabledFields} = this.props;
-
+    const { order, enabledFields } = this.props;
     return <Table.Row className="tr-clickable">
-        <Table.Cell key="checkbox" onClick={this.handleToggle}>
-          <Checkbox checked={!!order.selected}/>
-        </Table.Cell>
-        {Object.keys(enabledFields).map(field => {
-          const tdData = fields[field].fn ? fields[field].fn(order) : formatField(field, order)
-
-          return enabledFields[field] && (
-            <Table.Cell key={field} onClick={this.handleClick}>
-              {field === 'Items' ? <a href={`/orders/${order.id}`} onClick={e => e.preventDefault()}>{tdData}</a> : tdData}
-            </Table.Cell>
-          )
-        })}
+      <Table.Cell key="checkbox" onClick={this.handleToggle}>
+        <Checkbox checked={!!order.selected} />
+      </Table.Cell>
+      {Object.keys(enabledFields).map(field => {
+        const tdData = fields[field].fn ? fields[field].fn(order) : formatField(field, order)
+        return enabledFields[field] && (
+          <Table.Cell className={field} key={field} onClick={this.handleClick}>
+            {field === 'Items' ? <a href={`/orders/${order.id}`} onClick={e => e.preventDefault()}>{tdData}</a> : tdData}
+          </Table.Cell>
+        )
+      })}
     </Table.Row>;
   }
 }
@@ -251,7 +265,6 @@ export default class Orders extends Component {
         this.setState({downloading: false});
         const {enabledFields} = this.state;
         const rows = orders.map((order) => {
-          console.log('Rows for orders ', order.id)
           const formattedOrder = {};
           const headers = _.flatten(Object.keys(enabledFields).map((field) => {
             const match = field.match(/(\S+) Address$/);
@@ -265,7 +278,6 @@ export default class Orders extends Component {
               const match = field.match(/(\S+) Address$/);
               if (match) {
                 const addr = formatField(field, order);
-                console.log(addr, field, order)
                 addressFields.forEach((field) => {
                   formattedOrder[`${match[1]} ${field}`] = addr[field];
                 })
@@ -392,8 +404,7 @@ export default class Orders extends Component {
 
   handleToggleAll = e => {
     e.preventDefault()
-    const selection = !this.state.allSelected
-
+    const selection = !this.state.allSelected;
     this.setState({
       allSelected: selection,
       selection,
@@ -403,7 +414,6 @@ export default class Orders extends Component {
 
   handleReceipts = (e: SyntheticEvent) => {
     e.preventDefault();
-
     const {commerce} = this.props;
     const {orders} = this.state;
     const openWindow = window.open("about:blank", "Receipts");
@@ -418,29 +428,27 @@ export default class Orders extends Component {
     const {onLink} = this.props;
     const {loading, allSelected, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
 
-    return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
+    return <Layout onLink={onLink}>
+    <Container>
       <Dimmer.Dimmable dimmed={loading}>
         <ErrorMessage error={error}/>
         <Dimmer active={loading}>
             <Loader active={loading}>Loading orders...</Loader>
         </Dimmer>
 
-        <form onSubmit={this.search}>
-          <Input
+        <Form className="orders-search" onSubmit={this.search}>
+          <Form.Input
             action
             type="search"
             placeholder="Search..."
-            className="search-input search-padding"
-            onChange={this.handleSearchInput}>
-            <input />
+            className="search-input"
+            onChange={this.handleSearchInput}/>
             <Select compact options={this.searchOptions} value={searchScope} onChange={this.handleSearchScope} />
             <Button type='submit'>Search</Button>
-          </Input>
-        </form>
+        </Form>
         <Grid>
-          <Grid.Row columns={2}>
+          <Grid.Row className="orders-col" columns={2}>
             <Grid.Column>
-
               <Button toggle active={tax} onClick={this.handleTax}>
                 Includes Tax
               </Button>
@@ -455,14 +463,22 @@ export default class Orders extends Component {
               />
             </Grid.Column>
             <Grid.Column textAlign="right">
-                <Dropdown text="Fields" button>
+                <Dropdown text="Columns" button>
                   <Dropdown.Menu className="orders-left-menu">
                     {Object.keys(enabledFields).map((field) => <Dropdown.Item key={field}>
+                      <Dropdown.Header 
+                        content={{
+                          "ID": "ORDER",
+                          "Name": "CUSTOMER",
+                          "Payment State": "BILLING",
+                          "Shipping State": "SHIPPING"
+                        }[field]} 
+                      />
                       <Checkbox name={field} label={field} checked={enabledFields[field]} onChange={this.handleToggleField}/>
                     </Dropdown.Item>)}
                   </Dropdown.Menu>
                 </Dropdown>
-
+                
                 <Button loading={downloading} onClick={this.handleDownload}>
                   Export CSV
                 </Button>
@@ -470,29 +486,31 @@ export default class Orders extends Component {
                 <Button onClick={this.handleReceipts} disabled={!selection}>
                   Open Receipts
                 </Button>
+                <PaginationView {...pagination} perPage={PER_PAGE} onClick={this.handlePage}/>
             </Grid.Column>
           </Grid.Row>
         </Grid>
-
-        <Table celled striped selectable>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell key="selector" onClick={this.handleToggleAll}>
-                <Checkbox checked={!!allSelected} />
-              </Table.HeaderCell>
-              {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.HeaderCell key={field}>
-                {field}
-              </Table.HeaderCell>)}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {orders && orders.map((order) => (
-              <OrderDetail key={order.id} order={order} enabledFields={enabledFields} onLink={onLink} onSelect={this.handleSelect}/>
-            ))}
-          </Table.Body>
-        </Table>
-        <PaginationView {...pagination} perPage={PER_PAGE} onClick={this.handlePage}/>
+        <Container className="outerScroll">
+          <Table celled striped selectable singleLine>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell key="selector" onClick={this.handleToggleAll}>
+                  <Checkbox checked={!!allSelected} />
+                </Table.HeaderCell>
+                {Object.keys(enabledFields).map((field) => enabledFields[field] && <Table.HeaderCell key={field}>
+                  {field}
+                </Table.HeaderCell>)}
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {orders && orders.map((order) => (
+                <OrderDetail key={order.id} order={order} enabledFields={enabledFields} onLink={onLink} onSelect={this.handleSelect}/>
+              ))}
+            </Table.Body>
+          </Table>
+        </Container>
       </Dimmer.Dimmable>
+    </Container>
     </Layout>;
   }
 }

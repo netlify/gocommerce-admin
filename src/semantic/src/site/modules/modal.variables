@@ -1,3 +1,11 @@
 /*******************************
          Site Overrides
 *******************************/
+@headerColor: @blue;
+
+@headerVerticalPadding: 16px;
+@headerHorizontalPadding: 30px;
+
+@smallRatio: 0.4;
+@headerBorder: none;
+@headerFontWeight: normal;

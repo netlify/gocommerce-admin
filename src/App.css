@@ -1,7 +1,8 @@
 .App {}
 .Main {
-  margin-left: 15rem;
+  margin: 0 7rem 0 7rem;
   padding: 1rem;
+  margin-top: 50px;
 }
 
 .tr-clickable {
@@ -14,4 +15,12 @@
 
 .search-padding {
   padding-bottom: 1rem;
+}
+
+@media only screen and (max-width: 767px){
+  .Main {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
 }

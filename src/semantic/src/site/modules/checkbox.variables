@@ -10,4 +10,8 @@
 @labelColor: @blue;
 
 @checkboxCheckFontSize: 12px;
-@checkboxActiveFocusBackground: red;
+@checkboxBorder: solid 0.5px rgba(0, 0, 0, 0.2);
+@checkboxActiveBorderColor: #338ef4;
+@checkboxActiveBackground: #338ef4;
+@checkboxActiveCheckColor: @white;
+

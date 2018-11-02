@@ -81,12 +81,6 @@ export default class Customers extends Component {
     this.props.commerce
       .users(this.userQuery())
       .then(({ users, pagination }) => {
-        pagination = {
-          current: this.state.page,
-          last: 6,
-          next: this.state.page + 1,
-          total: 100
-        };
         this.setState({
           loading: false,
           customers: users,
@@ -121,38 +115,37 @@ export default class Customers extends Component {
           <Form.Input
             action
             type="search"
-            placeholder="Look up a customer..."
             className="search-input"
           >
             <Input
               icon="search"
               iconPosition="left"
               onChange={this.handleSearchInput}
+              placeholder="Look up a customer..."
             />
           </Form.Input>
         </Form>
         <ErrorMessage error={error} />
         <Segment basic>
-          <Button className="export-data"/>
-          <Button className="delete-data"/>
           <PaginationView
             {...pagination}
             perPage={PER_PAGE}
             onClick={this.handlePage}
           />
         </Segment>
-        <Segment basic loading={loading}>
+        <Segment basic loading={loading} className="customers">
           <Card.Group itemsPerRow={3}>
             {customers &&
               customers.map(customer => (
                 <Card key={customer.id}>
                   <Card.Content>
                     <Card.Header>
-                      <Checkbox label="Name" />
+                    {customer.name?customer.name : "Anonymous Buyer"}
                     </Card.Header>
                     <Card.Description>{customer.email}</Card.Description>
                   </Card.Content>
                   <Card.Content extra>
+                    <p>Last order {distanceInWordsToNow(customer.last_order_at)} ago</p>
                     <p>{customer.order_count}</p>
                   </Card.Content>
                 </Card>
