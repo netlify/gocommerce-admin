@@ -1,14 +1,28 @@
 // @flow
-import type {Commerce, Customer, Pagination} from '../../Types';
-import React, {PropTypes, Component} from 'react';
-import {Breadcrumb, Divider, Grid, Item, Segment, Input, Button} from 'semantic-ui-react';
-import ErrorMessage from '../Messages/Error';
-import Gravatar from 'react-gravatar';
-import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
+import type { Commerce, Customer, Pagination } from "../../Types";
+import React, { PropTypes, Component } from "react";
+import {
+  Breadcrumb,
+  Form,
+  Divider,
+  Grid,
+  Checkbox,
+  Card,
+  Segment,
+  Input,
+  Button, 
+  Container
+} from "semantic-ui-react";
+import ErrorMessage from "../Messages/Error";
+import Gravatar from "react-gravatar";
+import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
+import PaginationView, { pageFromURL } from "../Pagination";
+
+const PER_PAGE = 50;
 
 type props = {
   commerce: Commerce,
-  onLink: (SyntheticEvent) => void
+  onLink: SyntheticEvent => void
 };
 export default class Customers extends Component {
   props: props;
@@ -27,18 +41,23 @@ export default class Customers extends Component {
       loading: true,
       error: null,
       customers: null,
-      page: 1,
+      page: pageFromURL(),
       pagination: null,
       search: null
     };
   }
 
   componentDidMount() {
-    this.loadUsers()
+    this.loadUsers();
   }
 
-  handleSearchInput = (e: SyntheticEvent, el: {value: ?string}) => {
-    this.setState({search: el.value ? el.value : null});
+  handleSearchInput = (e: SyntheticEvent, el: { value: ?string }) => {
+    this.setState({ search: el.value ? el.value : null });
+  };
+
+  handlePage = (e: SyntheticEvent, el: { "data-number": string }) => {
+    e.preventDefault();
+    this.changePage(parseInt(el["data-number"], 10));
   };
 
   search = (e: SyntheticEvent) => {
@@ -46,71 +65,95 @@ export default class Customers extends Component {
     this.loadUsers();
   };
 
+  changePage(page: number) {
+    let location = document.location.href;
+    if (location.match(/page=\d+/)) {
+      location = location.replace(/page=\d+/, `page=${page}`);
+    } else {
+      location += `${location.match(/\?/) ? "&" : "?"}page=${page}`;
+    }
+    this.props.push(location.replace(/https?:\/\/[^\/]+/, ""));
+    this.setState({ page }, this.loadUsers);
+  }
+
   loadUsers = () => {
-    this.setState({loading: true});
-    this.props.commerce.users(this.userQuery())
-      .then(({users, pagination}) => {
-        this.setState({loading: false, customers: users, pagination, error: null});
+    this.setState({ loading: true });
+    this.props.commerce
+      .users(this.userQuery())
+      .then(({ users, pagination }) => {
+        this.setState({
+          loading: false,
+          customers: users,
+          pagination,
+          error: null
+        });
       })
-      .catch((error) => {
+      .catch(error => {
         console.log("Error loading customers: %o", error);
-        this.setState({loading: false, error});
+        this.setState({ loading: false, error });
       });
   };
 
   userQuery(page: ?number) {
     const query: Object = {
+      per_page: PER_PAGE,
       page: page || this.state.page
     };
     if (this.state.search) {
-      query.email = UsersFilters.email(this.state)
+      query.email = UsersFilters.email(this.state);
     }
     return query;
   }
 
-
   render() {
-    const {onLink} = this.props;
-    const {loading, error, customers} = this.state;
+    const { onLink } = this.props;
+    const { loading, error, customers, pagination } = this.state;
 
-    return <div>
-      <Grid>
-        <Grid.Row columns={2}>
-          <Grid.Column>
-            <Breadcrumb>
-              <Breadcrumb.Section active href="/customers" onClick={onLink}>Customers</Breadcrumb.Section>
-            </Breadcrumb>
-          </Grid.Column>
-          <Grid.Column textAlign="right">
-          </Grid.Column>
-        </Grid.Row>
-      </Grid>
-
-      <Divider/>
-
-      <form onSubmit={this.search}>
-        <Input action type="search" placeholder="Search..." className="search-input" onChange={this.handleSearchInput}>
-          <input />
-          <Button type='submit'>Search</Button>
-        </Input>
-      </form>
-      <ErrorMessage error={error}/>
-
-      <Segment loading={loading}>
-        <Item.Group divided>
-          {customers && customers.map((customer) => <Item key={customer.id}>
-            <div className="ui tiny image">
-              <Gravatar email={customer.email}/>
-            </div>
-            <Item.Content>
-              <Item.Header>{customer.email}</Item.Header>
-              <Item.Description>{customer.order_count} Orders</Item.Description>
-              <Item.Extra>Created {distanceInWordsToNow(customer.created_at)} ago</Item.Extra>
-            </Item.Content>
-          </Item>)}
-        </Item.Group>
-      </Segment>
-    </div>;
+    return (
+      <Container>
+        <Form onSubmit={this.search}>
+          <Form.Input
+            action
+            type="search"
+            className="search-input"
+          >
+            <Input
+              icon="search"
+              iconPosition="left"
+              onChange={this.handleSearchInput}
+              placeholder="Look up a customer..."
+            />
+          </Form.Input>
+        </Form>
+        <ErrorMessage error={error} />
+        <Segment basic>
+          <PaginationView
+            {...pagination}
+            perPage={PER_PAGE}
+            onClick={this.handlePage}
+          />
+        </Segment>
+        <Segment basic loading={loading} className="customers">
+          <Card.Group itemsPerRow={3}>
+            {customers &&
+              customers.map(customer => (
+                <Card key={customer.id}>
+                  <Card.Content>
+                    <Card.Header>
+                    {customer.name?customer.name : "Anonymous Buyer"}
+                    </Card.Header>
+                    <Card.Description>{customer.email}</Card.Description>
+                  </Card.Content>
+                  <Card.Content extra>
+                    <p>Last order {distanceInWordsToNow(customer.last_order_at)} ago</p>
+                    <p>{customer.order_count}</p>
+                  </Card.Content>
+                </Card>
+              ))}
+          </Card.Group>
+        </Segment>
+      </Container>
+    );
   }
 }
 

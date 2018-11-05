@@ -18,7 +18,9 @@ export type Customer = {
   id: string,
   email: string,
   order_count: number,
-  created_at: string
+  created_at: string,
+  last_order_at: string,
+  name: string
 };
 
 export type Order = {

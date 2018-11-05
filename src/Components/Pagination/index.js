@@ -51,7 +51,6 @@ export default function Pagination({
   perPage,
   onClick
 }: args) {
-
   const pages = calculatePages(current, last);
   if (!pages) {
     return null;
@@ -59,11 +58,12 @@ export default function Pagination({
 
   const from = (current - 1) * perPage;
   const to = Math.min(from + perPage, total);
-  const totalPages = Math.floor(total / perPage);
-  const paginationText =  current == undefined || last == undefined ? "..." : current + "of" + last;
-
+  const paginationText = current + "of" + last;
+  
   return (
-    <Menu pagination>
+    <List horizontal>
+      <List.Item>
+        <Menu pagination>
           {current !== 1 && (
             <Menu.Item name="Back" data-number={current - 1} onClick={onClick}>
               <ChevronLeftIcon size="16" color="#1667D6" />
@@ -73,6 +73,8 @@ export default function Pagination({
           <Menu.Item name="Forward" data-number={current + 1} onClick={onClick}>
             <ChevronRightIcon size="16" color="#1667D6" />
           </Menu.Item>
-    </Menu>
+        </Menu>
+      </List.Item>
+    </List>
   );
 }
