@@ -467,8 +467,9 @@ export default class Orders extends Component {
 
   loadOrders = () => {
     this.setState({ loading: true });
+    const { params, options } = this.orderQuery();
     this.props.commerce
-      .orderHistory(this.orderQuery())
+      .orderHistory(params, options)
       .then(response => {
         const { orders, pagination } = response;
         if (pagination.last < this.state.page && this.state.page !== 1) {
@@ -509,7 +510,8 @@ export default class Orders extends Component {
     filteredFilters[this.state.searchScope] = this.state.search;
     filteredFilters.sort = `${this.state.sortedBy} ${this.state.direction}`;
 
-    const query: Object = {
+  
+    const params: Object = {
       user_id: "all",
       per_page: PER_PAGE,
       page: page || this.state.page,
@@ -520,7 +522,16 @@ export default class Orders extends Component {
         return value;
       })
     };
-    return query;
+
+    const options = {};
+    if(this.state.billingCountryType === "not-eu"){
+      options.negatedParams = {billing_countries: eucountries}
+    }
+    
+    return {
+      params,
+      options
+    };
   }
 
   downloadAll(page: ?number) {
@@ -528,9 +539,9 @@ export default class Orders extends Component {
     if (selected.length > 0) {
       return Promise.resolve(selected);
     }
-
+    const { params, options } = this.orderQuery(page || 1);
     return this.props.commerce
-      .orderHistory(this.orderQuery(page || 1))
+      .orderHistory(params, options)
       .then(
         ({ orders, pagination }) =>
           pagination.last === pagination.current
@@ -814,6 +825,13 @@ export default class Orders extends Component {
                             name="Eu"
                             onChange={this.handleCountryChange}
                             label="EU"
+                          />
+                          <Form.Radio
+                            checked={billingCountryType === "not-eu"}
+                            value="not-eu"
+                            name="Not Eu"
+                            onChange={this.handleCountryChange}
+                            label="Not EU"
                           />
                           <Form.Radio
                             checked={billingCountryType === "country"}
