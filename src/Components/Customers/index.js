@@ -18,6 +18,7 @@ import ErrorMessage from "../Messages/Error";
 import Gravatar from "react-gravatar";
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
 import PaginationView, { pageFromURL } from "../Pagination";
+import "csvexport/dist/Export.min";
 
 const PER_PAGE = 50;
 
@@ -95,6 +96,15 @@ export default class Customers extends Component {
     }
   }
 
+  handleDownload = (e: SyntheticEvent) => {
+    e.preventDefault();
+    const customers = this.state.customers.filter(customer => this.state.selectedCustomers[customer.id])
+    const exporter = window.Export.create({ filename: "customers.csv" });
+    if(customers.length > 0){
+      exporter.downloadCsv(customers)
+    };
+  }
+
   deleteSelectedUsers = () => {
     this.setState({ loading: true , modalOpen: false });
     const selectedIds = Object.keys(this.state.selectedCustomers);
@@ -149,7 +159,7 @@ export default class Customers extends Component {
     const { loading, error, customers, pagination } = this.state;
 
     return (
-      <Container>
+      <Container className="customers">
         <Form onSubmit={this.search}>
           <Form.Input
             action
@@ -166,8 +176,11 @@ export default class Customers extends Component {
         </Form>
         <ErrorMessage error={error} />
         <Segment basic>
+        <Button className="small-button download" onClick={this.handleDownload}>
+          Export Customer Data
+        </Button>
         <Modal trigger={<Button onClick={this.handleOpen}
-         className="delete">Delete Customer Data</Button>} 
+         className="small-button delete">Delete Customer Data</Button>} 
          open={this.state.modalOpen}
          onClose={this.handleClose}
          size='small'>
