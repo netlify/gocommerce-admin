@@ -35,3 +35,8 @@
     float: right;
     text-align: right;
 }
+
+.ui.negative.button {
+    background-image: linear-gradient(to bottom,#ff4e4e,#db2828);
+}
+
