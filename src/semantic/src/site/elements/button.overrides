@@ -1,0 +1,42 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+.ui.secondary.button, .ui.secondary.buttons .button {
+    font-weight: normal;
+    color: #2A4872;
+    background-image: linear-gradient(to bottom, #FFFFFF, #F6F7F9);
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.15);
+}
+.ui.secondary.button:focus, .ui.secondary.buttons .button:focus {
+    background-image :none;
+    background-color: #D1D4D9;
+    color: #2A4872;
+
+}
+.ui.secondary.button:hover, .ui.secondary.buttons .button:hover {
+    background-image :none;
+    background-color: #D1D4D9;
+    color: #2A4872;
+    text-shadow: none;
+}
+.orders-col .button {
+    padding: 7px;
+    min-height: 20px;
+    height: 27px;
+    color: #2a4872;
+    font-size: 13px;
+    background-image: linear-gradient(to bottom,#fff,#f6f7f9);
+    border: 1px solid rgba(34,36,38,.15);
+    box-shadow: 0 2px 6px 0 rgba(42,72,114,.05), 0 1px 3px 0 rgba(42,72,114,.1);
+}
+
+.orders-col .button .dropdown:first-child{
+    float: right;
+    text-align: right;
+}
+
+.ui.negative.button {
+    background-image: linear-gradient(to bottom,#ff4e4e,#db2828);
+}
+

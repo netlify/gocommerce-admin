@@ -1,0 +1,44 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+
+
+/* Input */
+@inputFont: @pageFont;
+@inputWidth: 100%;
+@inputFontSize: 1em;
+@inputPadding: (@inputVerticalPadding + ((1em - @inputLineHeight) / 2)) @inputHorizontalPadding;
+@inputBorder: solid 2px rgba(255, 255, 255, 0);
+@inputBorderRadius: @absoluteBorderRadius;
+@inputColor: @textColor;
+@inputTransition:
+  color @defaultDuration @defaultEasing,
+  border-color @defaultDuration @defaultEasing
+;
+@inputBoxShadow: @subtleShadow;
+
+/* Select */
+@selectBackground: @white;
+@selectBorderRadius: @inputBorderRadius;
+@selectBorder: @blueBorderColor;
+@selectPadding: 0.62em @inputHorizontalPadding;
+@selectBoxShadow: @inputBoxShadow;
+@selectTransition: @inputTransition;
+@selectColor: @inputColor;
+
+/*-------------------
+        States
+--------------------*/
+
+/* Focus */
+@inputFocusPointerSize: 0px;
+
+/* Input Focus */
+@inputFocusBackground: @inputBackground;
+@inputFocusBorderColor: @focusedFormBorderColor;
+@inputFocusColor:  @focusedFormBorderColor;
+@inputFocusBoxShadow: @inputFocusPointerSize 0em 0em 0em @selectedBorderColor inset;
+@inputFocusBorderRadius: @inputBorderRadius;
+
+@labelColor: @blue;
+@labelFontWeight: normal;

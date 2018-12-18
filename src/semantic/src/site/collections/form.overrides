@@ -1,0 +1,16 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+.orders-search {
+    display: flex;
+}
+.orders-search .button , .orders-search .dropdown{
+    margin: 0 0 0 4px;
+}
+.ui.form.orders-search .search-input {
+    margin: auto;
+}
+.ui.form.orders-search .action.input:not([class*="left action"])>input {
+    border-radius: 3px!important;
+}

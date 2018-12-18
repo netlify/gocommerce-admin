@@ -1,17 +1,29 @@
 // @flow
-import React, {Component} from 'react';
-import {List, Menu} from 'semantic-ui-react';
+import React, { Component } from "react";
+import { List, Menu } from "semantic-ui-react";
+import ChevronLeftIcon from "mdi-react/ChevronLeftIcon";
+import ChevronRightIcon from "mdi-react/ChevronRightIcon";
 
 function calculatePages(current: number, last: number) {
-  if (last <= 1) { return null; }
-
-  const pages = [{name: "First", number: 1}];
-  for (let page = 1; page <= last; page++) {
-    if (page - current < -3) { continue; }
-    if (current - page < -3) { continue; }
-    pages.push({name: page.toString(), number: page, active: page === current});
+  if (last <= 1) {
+    return null;
   }
-  pages.push({name: "Last", number: last});
+
+  const pages = [{ name: "First", number: 1 }];
+  for (let page = 1; page <= last; page++) {
+    if (page - current < -3) {
+      continue;
+    }
+    if (current - page < -3) {
+      continue;
+    }
+    pages.push({
+      name: page.toString(),
+      number: page,
+      active: page === current
+    });
+  }
+  pages.push({ name: "Last", number: last });
   return pages;
 }
 
@@ -24,28 +36,45 @@ export function pageFromURL() {
 }
 
 type args = {
-  current: number, next: ?number, last: number, total: number,
-  perPage: number, onClick: (SyntheticEvent, Object) => void
+  current: number,
+  next: ?number,
+  last: number,
+  total: number,
+  perPage: number,
+  onClick: (SyntheticEvent, Object) => void
 };
-export default function Pagination({current, next, last, total, perPage, onClick}: args) {
+export default function Pagination({
+  current,
+  next,
+  last,
+  total,
+  perPage,
+  onClick
+}: args) {
   const pages = calculatePages(current, last);
-  if (!pages) { return null; }
+  if (!pages) {
+    return null;
+  }
 
   const from = (current - 1) * perPage;
   const to = Math.min(from + perPage, total);
-
-  return <List horizontal>
-    <List.Item>
-      <Menu pagination>
-        {pages.map((page, i) => <Menu.Item
-          key={i}
-          name={page.name.toString()}
-          active={page.active}
-          data-number={page.number}
-          onClick={onClick}
-        />)}
-      </Menu>
-    </List.Item>
-    <List.Item>{from}-{to} of {total}</List.Item>
-  </List>;
+  const paginationText = current + "of" + last;
+  
+  return (
+    <List horizontal>
+      <List.Item>
+        <Menu pagination>
+          {current !== 1 && (
+            <Menu.Item name="Back" data-number={current - 1} onClick={onClick}>
+              <ChevronLeftIcon size="16" color="#1667D6" />
+            </Menu.Item>
+          )}
+          <Menu.Item name={paginationText} />
+          <Menu.Item name="Forward" data-number={current + 1} onClick={onClick}>
+            <ChevronRightIcon size="16" color="#1667D6" />
+          </Menu.Item>
+        </Menu>
+      </List.Item>
+    </List>
+  );
 }

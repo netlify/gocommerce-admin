@@ -1,0 +1,81 @@
+/*******************************
+     User Global Variables
+*******************************/
+
+
+/*-------------------
+    Brand Colors
+--------------------*/
+
+@primaryColor        : #1667D6;
+@secondaryColor      : #ffffff;
+
+@lightPrimaryColor   : @lightBlue;
+@lightSecondaryColor : @lightBlack;
+
+
+/*-------------------
+      Site Colors
+--------------------*/
+
+/*---  Colors  ---*/
+@blue             : #2A4872;
+@black            : #62676E;
+@grey             : #A3A8AF;
+
+/*---  Light Colors  ---*/
+@lightBlue        : #1667D6;
+@lightGrey        : #DCDDDE;
+@paleBlue         : #E9EDF2;
+
+/*---   Neutrals  ---*/
+@fullBlack        : #000000;
+@white            : #FAFAFA;
+
+/*--- Colored Backgrounds ---*/
+@lightBlueBackground    : @paleBlue;
+@lightGrayBackground    : @white;
+
+
+/*--- Colored Border ---*/
+@blueBorderColor   : @blue;
+
+/*-------------------
+    Focused Input
+--------------------*/
+
+/* Used on inputs, textarea etc */
+@focusedFormBorderColor: @lightBlue;
+
+/*-------------------
+     Alpha Colors
+--------------------*/
+
+@subtleTransparentBlack     : rgba(0, 0, 0, 0.03);
+@transparentBlack           : rgba(0, 0, 0, 0.05);
+@strongTransparentBlack     : rgba(0, 0, 0, 0.10);
+@veryStrongTransparentBlack : rgba(0, 0, 0, 0.15);
+
+
+@subtleTransparentWhite     : rgba(255, 255, 255, 0.02);
+@transparentWhite           : rgba(255, 255, 255, 0.08);
+@strongTransparentWhite     : rgba(255, 255, 255, 0.15);
+
+/*-------------------
+       Accents
+--------------------*/
+
+/* Differentiating Neutrals */
+@blueGradient           : linear-gradient(to bottom, #2872ee, #0b50c3);
+@subtleGradient         : linear-gradient(transparent, @transparentBlack);
+@subtleShadow           : 0 2px 6px 0 rgba(42, 72, 114, 0.05), 0 1px 3px 0 rgba(42, 72, 114, 0.1);
+@primaryColorGradiant   : linear-gradient(to bottom, #2872ee, #0b50c3);
+@secondaryColorGradiant : linear-gradient(to bottom, #ffffff, #f6f7f9);
+@pageBackgroundGradiant : linear-gradient(to bottom, #ffffff, #e9edf2);
+
+
+/*-------------------
+        Page
+--------------------*/
+@pageBackground         : @paleBlue;
+@headerFontWeight : normal;

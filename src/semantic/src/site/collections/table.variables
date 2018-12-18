@@ -1,0 +1,14 @@
+/*******************************
+    User Variable Overrides
+*******************************/
+.ui.basic.table {
+    margin-top: 27px;
+}
+
+.ui.basic.table tbody tr {
+    background: red;
+}
+.ui.basic.table tbody tr:first-child {
+  background-color: lime;
+  font-size: 14px;
+}

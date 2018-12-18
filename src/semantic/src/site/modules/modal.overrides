@@ -1,0 +1,56 @@
+/*******************************
+         Site Overrides
+*******************************/
+
+.ui.modal.order-modal form button{
+  width: 100%;
+}
+.ui.modal.order-modal svg {
+  float: right;
+  cursor: pointer;
+}
+.ui.modal.order-modal .header svg{
+    color: #a3a8af;
+}
+.ui.modal.item-info-modal .header svg {
+  float: right;
+  cursor: pointer;
+}
+.ui.modal.item-info-modal .header {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+  background-color: #2a4872;
+  padding: 35px;
+}
+.ui.modal.item-info-modal .content {
+  padding: 35px;
+}
+.ui.modal.item-info-modal .segment {
+  background-color: #2a4872;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+.ui.modal.item-info-modal .segment p {
+  display: inline-block;
+  color: #ffffff;
+  width: 150px;
+  text-align: right;
+}
+.ui.modal.item-info-modal .segment p+p {
+  color: #c1cdde;
+  margin-left: 30px;
+  font-weight: normal;
+  text-align: left;
+  width: auto;
+}
+.ui.modal.item-info-modal .content .segment {
+  background-color: #ffffff;
+}
+.ui.modal.item-info-modal .content .segment p {
+  color: #2a4872;
+}
+.ui.modal.item-info-modal .content .segment p+p {
+  color: #62676e;
+}
