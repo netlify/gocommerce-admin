@@ -14,7 +14,7 @@
     "csvexport": "^1.0.2",
     "date-fns": "^1.21.0",
     "director": "^1.2.8",
-    "gocommerce-js": "^3.9.0",
+    "gocommerce-js": "^4.4.1",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^4.0.0",
     "gulp-chmod": "^2.0.0",

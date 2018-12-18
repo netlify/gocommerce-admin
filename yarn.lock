@@ -3083,9 +3083,9 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-gocommerce-js@^3.9.0:
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/gocommerce-js/-/gocommerce-js-3.9.0.tgz#71b8c432ef573d9c087b1c16f4e7c64cf65869e7"
+gocommerce-js@^4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/gocommerce-js/-/gocommerce-js-4.4.1.tgz#838a883eb13ec2d053c6bed8199a5d3c9901116f"
   dependencies:
     micro-api-client "^2.0.0"
 

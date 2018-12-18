@@ -60,3 +60,21 @@
 .ui.segment .price-total p {
     margin-bottom: 0;
 }
+.customers .ui.segment {
+    padding: 0;
+}
+.customers .ui.basic.segment .small-button{
+    margin-right:8px;
+    min-height: 20px;
+    height: 27px;
+    padding: 0 10px;
+    box-shadow: 0 2px 6px 0 rgba(92, 101, 115, 0.1), 0 1px 3px 0 rgba(92, 101, 115, 0.3);
+}
+.customers .ui.basic.segment .small-button.delete {
+    color: #5f1e1e;
+    background-image: linear-gradient(to bottom, #fff1f1, #ffe6e6);
+}
+.customers .ui.basic.segment .small-button.download {
+    color: #5f531e;
+    background-image: linear-gradient(to bottom, #fffdf1, #fffae6);
+}

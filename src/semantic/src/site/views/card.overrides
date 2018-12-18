@@ -10,6 +10,9 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+.customers .ui.card .extra.content {
+    border: none!important;
+}
 .customers .ui.card .extra p:nth-child(2){
     float: right;
 }
@@ -20,4 +23,7 @@
 .customers .ui.card .content .header {
     color: #2a4872;
     margin-left: 20px;
+}
+.customers .ui.card.active {
+    background-color: #fffae8;
 }

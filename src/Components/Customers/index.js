@@ -11,12 +11,14 @@ import {
   Segment,
   Input,
   Button, 
-  Container
+  Container,
+  Modal
 } from "semantic-ui-react";
 import ErrorMessage from "../Messages/Error";
 import Gravatar from "react-gravatar";
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
 import PaginationView, { pageFromURL } from "../Pagination";
+import "csvexport/dist/Export.min";
 
 const PER_PAGE = 50;
 
@@ -27,6 +29,8 @@ type props = {
 export default class Customers extends Component {
   props: props;
   state: {
+    modalOpen: boolean,
+    selectedCustomers: Object,
     loading: boolean,
     error: ?Object,
     customers: ?Array<Customer>,
@@ -38,6 +42,8 @@ export default class Customers extends Component {
   constructor(props: props) {
     super(props);
     this.state = {
+      modalOpen: false,
+      selectedCustomers: {},
       loading: true,
       error: null,
       customers: null,
@@ -76,6 +82,49 @@ export default class Customers extends Component {
     this.setState({ page }, this.loadUsers);
   }
 
+  handleOpen = () => this.setState({ modalOpen: true })
+
+  handleClose = () => this.setState({ modalOpen: false })
+
+  handleCustomerSelect = (e: SyntheticEvent, el: { value: string, checked: boolean}) =>{
+    if(el.checked){
+      this.setState({ selectedCustomers: {...this.state.selectedCustomers, [el.value]:true}})
+    } else {
+      const selected = {...this.state.selectedCustomers}
+      delete selected[el.value]
+      this.setState({selectedCustomers: {...selected}})
+    }
+  }
+
+  handleDownload = (e: SyntheticEvent) => {
+    e.preventDefault();
+    const customers = this.state.customers.filter(customer => this.state.selectedCustomers[customer.id])
+    const exporter = window.Export.create({ filename: "customers.csv" });
+    if(customers.length > 0){
+      exporter.downloadCsv(customers)
+    };
+  }
+
+  deleteSelectedUsers = () => {
+    this.setState({ loading: true , modalOpen: false });
+    const selectedIds = Object.keys(this.state.selectedCustomers);
+    this.props.commerce
+      .deleteUsers(selectedIds)
+      .then(({ users, pagination }) => {
+        this.setState({
+          loading: false,
+          customers: users,
+          pagination,
+          error: null
+        });
+        this.loadUsers();
+      })
+      .catch(error => {
+        console.log("Error deleting customers: %o", error);
+        this.setState({ loading: false, error });
+      });
+  }
+
   loadUsers = () => {
     this.setState({ loading: true });
     this.props.commerce
@@ -93,7 +142,7 @@ export default class Customers extends Component {
         this.setState({ loading: false, error });
       });
   };
-
+  
   userQuery(page: ?number) {
     const query: Object = {
       per_page: PER_PAGE,
@@ -110,7 +159,7 @@ export default class Customers extends Component {
     const { loading, error, customers, pagination } = this.state;
 
     return (
-      <Container>
+      <Container className="customers">
         <Form onSubmit={this.search}>
           <Form.Input
             action
@@ -127,6 +176,23 @@ export default class Customers extends Component {
         </Form>
         <ErrorMessage error={error} />
         <Segment basic>
+        <Button className="small-button download" onClick={this.handleDownload}>
+          Export Customer Data
+        </Button>
+        <Modal trigger={<Button onClick={this.handleOpen}
+         className="small-button delete">Delete Customer Data</Button>} 
+         open={this.state.modalOpen}
+         onClose={this.handleClose}
+         size='small'>
+          <Modal.Header>Delete Customer Data</Modal.Header>
+            <Modal.Content>
+              <p>Are you sure you want to delete this customer data?</p>
+            </Modal.Content>
+            <Modal.Actions>
+              <Button onClick={this.handleClose} negative>No</Button>
+              <Button onClick={this.deleteSelectedUsers}  positive icon='checkmark' labelPosition='right' content='Yes' />
+            </Modal.Actions>
+        </Modal>
           <PaginationView
             {...pagination}
             perPage={PER_PAGE}
@@ -137,10 +203,10 @@ export default class Customers extends Component {
           <Card.Group itemsPerRow={3}>
             {customers &&
               customers.map(customer => (
-                <Card key={customer.id}>
+                <Card key={customer.id} className={this.state.selectedCustomers.hasOwnProperty(customer.id)? "active" : null}>
                   <Card.Content>
                     <Card.Header>
-                    {customer.name?customer.name : "Anonymous Buyer"}
+                    <Checkbox value={customer.id} onChange={this.handleCustomerSelect}></Checkbox> {customer.name?customer.name : "Anonymous Buyer"}
                     </Card.Header>
                     <Card.Description>{customer.email}</Card.Description>
                   </Card.Content>
