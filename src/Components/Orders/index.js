@@ -344,7 +344,7 @@ export default class Orders extends Component {
 
   loadOrders = () => {
     this.setState({loading: true});
-    this.props.commerce.orderHistory(Object.assign({ payment_state: 'paid' }, this.orderQuery()))
+    this.props.commerce.orderHistory(this.orderQuery())
       .then((response) => {
         const {orders, pagination} = response;
         if (pagination.last < this.state.page && this.state.page !== 1) {
@@ -358,12 +358,13 @@ export default class Orders extends Component {
       });
   }
 
-  orderQuery(page: ?number) {
+  orderQuery(page: ?number, per_page: ?number) {
     const { startDate, endDate } = this.state
     let query: Object = {
       user_id: "all",
-      per_page: PER_PAGE,
-      page: page || this.state.page
+      per_page: per_page || PER_PAGE,
+      page: page || this.state.page,
+      payment_state: 'paid',
     };
     this.state.filters.forEach((filter) => {
       query[filter] = OrdersFilters[filter](this.state);
@@ -383,7 +384,7 @@ export default class Orders extends Component {
       return Promise.resolve(selected);
     }
 
-    return this.props.commerce.orderHistory(this.orderQuery(page || 1))
+    return this.props.commerce.orderHistory(this.orderQuery(page || 1, 1000))
       .then(({orders, pagination}) => (
         pagination.last === pagination.current ? orders : this.downloadAll(pagination.next).then(o => orders.concat(o))
       ));
