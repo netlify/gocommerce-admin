@@ -118,16 +118,15 @@ export default class OrderView extends Component {
 
   handleReceipt = (e: SyntheticEvent) => {
     e.preventDefault();
-    const {commerce, config} = this.props;
     const {order} = this.state;
     if (!order) { return; }
-
-    const openWindow = window.open("about:blank", "Receipt");
-    console.log(config.receiptTemplate)
-    commerce.orderReceipt(order.id, config.receiptTemplate).then((data) => {
-      openWindow.document.body.innerHTML = data.data;
-    });
-
+    let user = localStorage.getItem('netlify.auth.user')
+    try {
+      user = JSON.parse(user)
+      window.open(`https://smashingmagazine.com/receipts/?id=${order.id}&jwt=${user.jwt_token}`, "Receipt");
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   render() {

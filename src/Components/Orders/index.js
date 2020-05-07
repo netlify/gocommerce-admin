@@ -425,14 +425,15 @@ export default class Orders extends Component {
   handleReceipts = (e: SyntheticEvent) => {
     e.preventDefault();
 
-    const {commerce} = this.props;
     const {orders} = this.state;
-    const openWindow = window.open("about:blank", "Receipts");
+    const selected = (orders || []).filter((o) => o.selected && o.payment_state === 'paid')
+    let user = localStorage.getItem('netlify.auth.user')
 
-    Promise.all((orders || []).filter((o) => o.selected && o.payment_state === 'paid').map((order) => commerce.orderReceipt(order.id)))
-      .then((receipts) => {
-        openWindow.document.body.innerHTML = receipts.map((data) => data.data).join("<div class='page-break'></div>");
-      });
+    console.log(selected.length)
+    user = JSON.parse(user)
+    selected.forEach((order, i) =>  {
+      setTimeout(() => window.open(`https://smashingmagazine.com/receipts/?id=${order.id}&jwt=${user.jwt_token}`, `Receipt ${i + 1}`), i * 100)
+    })
   }
 
   handleDatePicker = (isReset, isApply) => this.setState({
