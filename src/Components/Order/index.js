@@ -136,7 +136,7 @@ export default class OrderView extends Component {
     const item = params.item ? EditableItems[params.item] : null;
 
     return <Layout
-      breadcrumb={[{label: "Orders", href: "/orders"}, {label: formatId(params.id), href: `/orders/${params.id}`}]}
+      breadcrumb={[{label: "Orders", href: "/orders"}, {label: order ? order.invoice_number : formatId(params.id), href: `/orders/${params.id}`}]}
       onLink={onLink}
     >
       <ErrorMessage error={error}/>
@@ -146,7 +146,7 @@ export default class OrderView extends Component {
           <Grid.Column>
             <Segment loading={loading}>
               <Header as="h2" dividing>
-                Order Details
+                Order #<b>{order && order.invoice_number}</b>
                 <Header.Subheader>
                   {params.id}
                 </Header.Subheader>

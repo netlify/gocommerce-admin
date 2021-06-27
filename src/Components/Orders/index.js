@@ -93,7 +93,7 @@ function formatDateField(field: 'created_at' | 'updated_at') {
 }
 
 const fields = {
-  ID: {},
+  ID: { fn: (order) => order.invoice_number },
   Email: {sort: "email"},
   Items: {fn: formatLineItems},
   Name: {fn: formatName},
@@ -112,7 +112,7 @@ const fields = {
 };
 
 const enabledFields = {
-  ID: false,
+  ID: true,
   Items: true,
   Type: true,
   Name: true,
