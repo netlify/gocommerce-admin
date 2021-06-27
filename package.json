@@ -19,6 +19,7 @@
     "money": "^0.2.0",
     "netlify-auth-js": "^0.5.2",
     "react": "^15.4.1",
+    "react-date-range": "^0.9.4",
     "react-dom": "^15.4.1",
     "react-gravatar": "^2.6.1",
     "semantic-ui-css": "^2.2.4",

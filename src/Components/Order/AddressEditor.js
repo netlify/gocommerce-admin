@@ -48,8 +48,7 @@ export default class AddressEditor extends Component {
     return addr &&
       <Form onSubmit={this.handleSubmit}>
         <Form.Group widths="equal">
-          <Form.Input label="First Name" name="first_name" value={addr.first_name} onChange={this.handleChange}/>
-          <Form.Input label="Last Name" name="last_name" value={addr.last_name} onChange={this.handleChange}/>
+          <Form.Input label="First Name" name="name" value={addr.name} onChange={this.handleChange}/>
         </Form.Group>
         <Form.Group widths="equal">
           <Form.Input label="Country" name="country" value={addr.country} onChange={this.handleChange}/>

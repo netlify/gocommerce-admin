@@ -2,7 +2,7 @@
 import type {Commerce, Pagination, Order, Address} from '../../Types';
 import _ from 'lodash';
 import React, {Component} from 'react';
-import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Input, Select} from 'semantic-ui-react';
+import {Button, Checkbox, Grid, Dimmer, Dropdown, Loader, Table, Icon, Header, Input, Select, Modal} from 'semantic-ui-react';
 import Layout from '../Layout';
 import PaginationView, {pageFromURL} from '../Pagination';
 import ErrorMessage from '../Messages/Error';
@@ -10,6 +10,10 @@ import distanceInWordsToNow from 'date-fns/distance_in_words_to_now';
 import countries from '../../data/countries.json';
 import 'csvexport/dist/Export.min';
 import './Orders.css';
+import { defaultRanges, Calendar, DateRange } from 'react-date-range'
+import moment from 'moment'
+
+import { requiresShipping, formatDateInterval } from '../../helpers'
 
 
 const STORED_FIELDS_KEY = 'commerce.admin.orderFields';
@@ -32,10 +36,19 @@ function formatLineItems(order: Order, csv: boolean) {
 </span>)
 }
 
+function formatName(order: Order, csv: boolean) {
+
+  return _.get(order, 'billing_address.name') || _.get(order, 'shipping_address.name')
+}
+
 function formatLineItemTypes(order: Order, csv: boolean) {
   let types = [];
 
   (order.line_items || []).map(item => !types.includes(item.type) && types.push(item.type))
+
+  if (csv) {
+    return types.map(t => `${t}`).join(', ').replace(/,\s*$/, '')
+  }
 
   return types.map(t => <div key={t}>{t}</div>)
 }
@@ -80,9 +93,10 @@ function formatDateField(field: 'created_at' | 'updated_at') {
 }
 
 const fields = {
-  ID: {},
+  ID: { fn: (order) => order.invoice_number },
   Email: {sort: "email"},
   Items: {fn: formatLineItems},
+  Name: {fn: formatName},
   Type: {fn: formatLineItemTypes},
   "Shipping Address": {fn: formatAddress("shipping_address")},
   "Shipping Country": {fn: (order) => order.shipping_address.country},
@@ -90,7 +104,7 @@ const fields = {
   "Billing Country": {fn: (order) => order.billing_address.country},
   Taxes: {sort: "taxes", fn: formatPriceField("taxes")},
   Subtotal: {sort: "subtotal", fn: formatPriceField("subtotal")},
-  "Shipping State": {fn: (order) => order.fulfillment_state},
+  "Shipping State": {fn: (order) => requiresShipping(order) ? order.fulfillment_state : null},
   "Payment State": {},
   Total: {sort: "total", fn: formatPriceField("total")},
   "Created At": {sort: "created_at", fn: formatDateField("created_at")},
@@ -98,15 +112,16 @@ const fields = {
 };
 
 const enabledFields = {
-  ID: false,
+  ID: true,
   Items: true,
   Type: true,
+  Name: true,
   Email: true,
   "Shipping Address": false,
   "Shipping Country": false,
   "Billing Address": false,
   "Billing Country": false,
-  "Shipping State": true,
+  //"Shipping State": false,
   "Payment State": true,
   Taxes: false,
   Subtotal: false,
@@ -141,7 +156,6 @@ class OrderDetail extends Component {
 
   render() {
     const {order, enabledFields} = this.props;
-
     return <Table.Row className="tr-clickable">
         <Table.Cell key="checkbox" onClick={this.handleToggle}>
           <Checkbox checked={!!order.selected}/>
@@ -190,7 +204,7 @@ export default class Orders extends Component {
       error: null,
       filters: [],
       page: pageFromURL(),
-      enabledFields: storedFields ? JSON.parse(storedFields) : Object.assign({}, enabledFields),
+      enabledFields: Object.assign({}, enabledFields, storedFields ? JSON.parse(storedFields) : {}),
       tax: false,
       shippingCountries: null,
       orders: null,
@@ -267,7 +281,7 @@ export default class Orders extends Component {
                 const addr = formatField(field, order);
                 console.log(addr, field, order)
                 addressFields.forEach((field) => {
-                  formattedOrder[`${match[1]} ${field}`] = addr[field];
+                  formattedOrder[`${match[1]} ${field}`] = (field === 'zip') ? `="${addr[field]}"` : addr[field];
                 })
               } else {
                 formattedOrder[field] = fields[field].fn ? fields[field].fn(order, true) : formatField(field, order);
@@ -344,15 +358,23 @@ export default class Orders extends Component {
       });
   }
 
-  orderQuery(page: ?number) {
-    const query: Object = {
+  orderQuery(page: ?number, per_page: ?number) {
+    const { startDate, endDate } = this.state
+    let query: Object = {
       user_id: "all",
-      per_page: PER_PAGE,
-      page: page || this.state.page
+      per_page: per_page || PER_PAGE,
+      page: page || this.state.page,
+      payment_state: 'paid',
     };
     this.state.filters.forEach((filter) => {
       query[filter] = OrdersFilters[filter](this.state);
     });
+
+    if (startDate && endDate) {
+      query.from = startDate.unix()
+      query.to = endDate.unix()
+    }
+
     return query;
   }
 
@@ -362,7 +384,7 @@ export default class Orders extends Component {
       return Promise.resolve(selected);
     }
 
-    return this.props.commerce.orderHistory(this.orderQuery(page || 1))
+    return this.props.commerce.orderHistory(this.orderQuery(page || 1, 1000))
       .then(({orders, pagination}) => (
         pagination.last === pagination.current ? orders : this.downloadAll(pagination.next).then(o => orders.concat(o))
       ));
@@ -403,21 +425,57 @@ export default class Orders extends Component {
   handleReceipts = (e: SyntheticEvent) => {
     e.preventDefault();
 
-    const {commerce} = this.props;
     const {orders} = this.state;
-    const openWindow = window.open("about:blank", "Receipts");
+    const selected = (orders || []).filter((o) => o.selected && o.payment_state === 'paid')
+    let user = localStorage.getItem('netlify.auth.user')
 
-    Promise.all((orders || []).filter((o) => o.selected && o.payment_state === 'paid').map((order) => commerce.orderReceipt(order.id)))
-      .then((receipts) => {
-        openWindow.document.body.innerHTML = receipts.map((data) => data.data).join("<div class='page-break'></div>");
-      });
+    console.log(selected.length)
+    user = JSON.parse(user)
+    selected.forEach((order, i) =>  {
+      setTimeout(() => window.open(`https://smashingmagazine.com/receipts/?id=${order.id}&jwt=${user.jwt_token}`, `Receipt ${i + 1}`), i * 100)
+    })
   }
+
+  handleDatePicker = (isReset, isApply) => this.setState({
+    openDatePicker: !this.state.openDatePicker,
+    startDate: !isReset ? this.state.startDate : null,
+    endDate: !isReset ? this.state.endDate : null,
+  }, () => (isReset || isApply) && this.loadOrders())
 
   render() {
     const {onLink} = this.props;
-    const {loading, allSelected, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
+    const {loading, startDate, endDate, allSelected, openDatePicker, downloading, error, orders, pagination, tax, enabledFields, searchScope, selection} = this.state;
+    const interval = formatDateInterval(startDate, endDate)
+
 
     return <Layout breadcrumb={[{label: "Orders", href: "/orders"}]} onLink={onLink}>
+      <Modal open={openDatePicker}>
+        <Header icon='calendar' content='Select a date range' />
+        <Modal.Content>
+          <DateRange
+            linkedCalendars={ true }
+            ranges={ defaultRanges }
+            startDate={(startDate || moment()).format('DD/MM/YYYY')}
+            endDate={(endDate || moment()).format('DD/MM/YYYY')}
+            onInit={ ({ startDate, endDate }) => this.setState({ startDate, endDate })}
+            onChange={ ({ startDate, endDate }) => this.setState({ startDate, endDate })}
+            theme={{
+              DateRange: { width: 850 },
+              Calendar : { width: 350 },
+              PredefinedRanges : { marginLeft: 10, marginTop: 10 }
+            }}
+          />
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => this.handleDatePicker(1)}>
+            <Icon name='remove' /> Reset
+          </Button>
+          <Button color='green' inverted onClick={() => this.handleDatePicker(0, 1)}>
+            <Icon name='checkmark' /> Apply
+          </Button>
+        </Modal.Actions>
+      </Modal>
+
       <Dimmer.Dimmable dimmed={loading}>
         <ErrorMessage error={error}/>
         <Dimmer active={loading}>
@@ -439,6 +497,12 @@ export default class Orders extends Component {
         <Grid>
           <Grid.Row columns={2}>
             <Grid.Column>
+
+              <Button primary={!!interval} loading={downloading} onClick={() => this.handleDatePicker()}>
+                {interval || 'All time'}
+              </Button>
+
+
 
               <Button toggle active={tax} onClick={this.handleTax}>
                 Includes Tax

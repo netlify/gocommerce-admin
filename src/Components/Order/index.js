@@ -9,6 +9,8 @@ import Address from './Address';
 import AddressEditor from './AddressEditor';
 import './styles.css';
 
+import { requiresShipping } from '../../helpers'
+
 function formatId(id: string) {
   return id.split("-").pop();
 }
@@ -116,16 +118,15 @@ export default class OrderView extends Component {
 
   handleReceipt = (e: SyntheticEvent) => {
     e.preventDefault();
-    const {commerce, config} = this.props;
     const {order} = this.state;
     if (!order) { return; }
-
-    const openWindow = window.open("about:blank", "Receipt");
-    console.log(config.receiptTemplate)
-    commerce.orderReceipt(order.id, config.receiptTemplate).then((data) => {
-      openWindow.document.body.innerHTML = data.data;
-    });
-
+    let user = localStorage.getItem('netlify.auth.user')
+    try {
+      user = JSON.parse(user)
+      window.open(`https://smashingmagazine.com/receipts/?id=${order.id}&jwt=${user.jwt_token}`, "Receipt");
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   render() {
@@ -135,7 +136,7 @@ export default class OrderView extends Component {
     const item = params.item ? EditableItems[params.item] : null;
 
     return <Layout
-      breadcrumb={[{label: "Orders", href: "/orders"}, {label: formatId(params.id), href: `/orders/${params.id}`}]}
+      breadcrumb={[{label: "Orders", href: "/orders"}, {label: order ? order.invoice_number : formatId(params.id), href: `/orders/${params.id}`}]}
       onLink={onLink}
     >
       <ErrorMessage error={error}/>
@@ -145,7 +146,7 @@ export default class OrderView extends Component {
           <Grid.Column>
             <Segment loading={loading}>
               <Header as="h2" dividing>
-                Order Details
+                Order #<b>{order && order.invoice_number}</b>
                 <Header.Subheader>
                   {params.id}
                 </Header.Subheader>
@@ -178,14 +179,17 @@ export default class OrderView extends Component {
                     />
                   </Grid.Column>
 
-                  <Grid.Column>
-                    <Address
-                        title="Shipping Details"
-                        address={order && order.shipping_address}
-                        href={`/orders/${params.id}/shipping_address`}
-                        onLink={onLink}
-                    />
-                  </Grid.Column>
+
+                    <Grid.Column>
+                      {requiresShipping(order) && (
+                        <Address
+                          title="Shipping Details"
+                          address={order && order.shipping_address}
+                          href={`/orders/${params.id}/shipping_address`}
+                          onLink={onLink}
+                        />
+                      )}
+                    </Grid.Column>
 
                 </Grid.Row>
               </Grid>}
@@ -262,8 +266,8 @@ export default class OrderView extends Component {
               <Header as="h2">
                 Billing Status
                 <Header.Subheader>
-                  {order && order.payment_state}
-                  {order && order.payment_state === 'paid' && <a href="#" onClick={this.handleReceipt}> receipt</a>}
+                  <b>{order && order.payment_state.toUpperCase()}</b>
+                  {order && order.payment_state === 'paid' && <p><a href="#" onClick={this.handleReceipt}>Show receipt</a></p>}
                 </Header.Subheader>
               </Header>
 
@@ -282,23 +286,26 @@ export default class OrderView extends Component {
               </List>}
             </Segment>
 
-            <Segment>
-              <Header as="h2">
-                Shipping Status
-                <Header.Subheader>Shipping to {order && order.shipping_address && order.shipping_address.country}</Header.Subheader>
-              </Header>
+            {false && requiresShipping(order) && (
+              <Segment>
+                <Header as="h2">
+                  Shipping Status
+                  <Header.Subheader>Shipping to {order && order.shipping_address && order.shipping_address.country}</Header.Subheader>
+                </Header>
 
-              <Form onSubmit={this.handleShippingUpdate}>
-                <Form.Group>
-                  <Form.Select
-                    options={[{value: "pending", text: "Pending"}, {value: "shipped", text: "shipped"}]}
-                    value={newFullfilementState ? newFullfilementState : order && order.fulfillment_state}
-                    onChange={this.handleChangeShippingState}
-                  />
-                </Form.Group>
-                {order && newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
-              </Form>
-            </Segment>
+                <Form onSubmit={this.handleShippingUpdate}>
+                  <Form.Group>
+                    <Form.Select
+                      options={[{value: "pending", text: "Pending"}, {value: "shipped", text: "shipped"}]}
+                      value={newFullfilementState ? newFullfilementState : order && order.fulfillment_state}
+                      onChange={this.handleChangeShippingState}
+                    />
+                  </Form.Group>
+                  {order && newFullfilementState && newFullfilementState !== order.fulfillment_state && <Button type="submit">Update</Button>}
+                </Form>
+              </Segment>
+            )}
+
           </Grid.Column>
         </Grid.Row>
       </Grid>

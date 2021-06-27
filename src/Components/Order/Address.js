@@ -11,7 +11,7 @@ export default function({title, address, href, onLink}: args) {
     </h3>
 
     {address && <div>
-      {address.first_name} {address.last_name}<br/>
+      {address.name}<br/>
       {address.company && <span>{address.company}<br/></span>}
       {address.address1}<br/>
       {address.address2 && <span>{address.address2}<br/></span>}
